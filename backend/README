@@ -1,0 +1,241 @@
+
+---
+
+# 🧾 Visa Management System — Backend
+
+This repository contains the **backend** for the Visa Management System built with **Flask**, **PostgreSQL**, and **SQLAlchemy**.
+The backend provides RESTful APIs for managing employees, visas, and expiration alerts.
+
+---
+
+## 🧱 Project Structure
+
+```
+CMSC447PROJ_TEAMTWO/
+│
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py      # Flask app setup
+│   │   ├── config.py        # Configuration (PostgreSQL, env vars)
+│   │   ├── models.py        # Database models (User, Employee, Visa, Alert)
+│   │
+│   ├── create_db.py         # Script to create database automatically
+│   ├── migrations/          # Alembic migration files
+│   └── venv/                # Virtual environment (local use only)
+│
+├── .env                     # Local environment variables (ignored by Git)
+├── .env.example             # Template for teammates to copy
+├── requirements.txt         # Python dependencies
+└── wsgi.py                  # Entry point to run the Flask app
+```
+
+---
+
+## 🚀 Features
+
+* Flask backend connected to PostgreSQL
+* SQLAlchemy ORM models
+* Flask-Migrate for schema versioning
+* Environment-based configuration (`.env`)
+* Ready for deployment on Render, Railway, or Heroku
+
+---
+
+## 🧩 1. Prerequisites
+
+Make sure you have installed:
+
+* **Python 3.10+**
+* **PostgreSQL**
+* **pip** (Python package manager)
+
+Verify installation:
+
+```bash
+python3 --version
+psql --version
+```
+
+---
+
+## ⚙️ 2. Clone the Project
+
+```bash
+git clone <your-repository-link>
+cd CMSC447PROJ_TEAMTWO
+```
+
+---
+
+## 🧰 3. Set Up the Virtual Environment
+
+Inside the `backend` folder:
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate   # macOS/Linux
+# OR
+venv\Scripts\activate      # Windows
+```
+
+---
+
+## 📦 4. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 🔐 5. Configure Environment Variables
+
+At the project root (same level as `wsgi.py`), create a `.env` file:
+
+```bash
+FLASK_ENV=development
+SECRET_KEY=mysecretkey
+
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=visa_db
+```
+
+> Each teammate should use their own local PostgreSQL credentials.
+> You can copy the example file and update it:
+>
+> ```bash
+> cp .env.example .env
+> ```
+
+---
+
+## 🗄️ 6. Create the Database
+
+Make sure PostgreSQL is running, then execute:
+
+```bash
+python backend/create_db.py
+```
+
+✅ This will create the database (`visa_db`) if it does not already exist.
+
+---
+
+## 🧠 7. Initialize and Apply Migrations
+
+Once the database exists, apply the existing migrations:
+
+```bash
+export FLASK_APP=wsgi.py      # macOS/Linux
+# OR
+set FLASK_APP=wsgi.py         # Windows PowerShell
+
+flask db upgrade
+```
+
+> You **do not need** to run `flask db init` again — it’s already initialized in the repo.
+
+---
+
+## 🧩 8. Run the Flask Server
+
+```bash
+python wsgi.py
+```
+
+Then open your browser:
+👉 [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+If everything is configured correctly, you should see:
+
+```json
+{"message": "Visa Management Backend running"}
+```
+
+---
+
+## 🧩 9. Common Commands
+
+| Action                  | Command                         |
+| ----------------------- | ------------------------------- |
+| Start the server        | `python wsgi.py`                |
+| Apply migrations        | `flask db upgrade`              |
+| Generate new migration  | `flask db migrate -m "message"` |
+| Check current migration | `flask db current`              |
+| Access PostgreSQL shell | `psql -U postgres -d visa_db`   |
+
+---
+
+## 🧰 10. Troubleshooting
+
+### 🧩 Database connection errors
+
+If you see:
+
+```
+psql: FATAL:  role "postgres" does not exist
+```
+
+→ Create the postgres role:
+
+```sql
+CREATE ROLE postgres WITH LOGIN SUPERUSER PASSWORD 'yourpassword';
+```
+
+### 🧩 Database doesn’t exist
+
+If you see:
+
+```
+FATAL:  database "visa_db" does not exist
+```
+
+→ Run:
+
+```bash
+python backend/create_db.py
+```
+
+### 🧩 Migrations folder missing
+
+If `flask db` says:
+
+```
+Error: No such command 'db'
+```
+
+Make sure `Flask-Migrate` is installed and `migrate = Migrate(app, db)` is initialized inside `backend/app/__init__.py`.
+
+---
+
+## 🧩 11. Contributing
+
+1. Create a feature branch
+
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+2. Commit your changes
+
+   ```bash
+   git commit -m "Add new feature"
+   ```
+3. Push to the branch
+
+   ```bash
+   git push origin feature/your-feature
+   ```
+4. Create a Pull Request
+
+---
+
+## 🧾 License
+
+This project is for academic and collaborative use by the CMSC447 Team Two.
+All rights reserved © 2025.
+
+---
