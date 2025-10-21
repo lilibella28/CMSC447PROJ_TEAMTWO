@@ -86,7 +86,7 @@ export function Login({ onLogin }: LoginProps) {
           
           {/* Sign In Title */}
           <h2 className="text-lg font-semibold text-center text-foreground">
-            Sign in to Visa Dashboard
+            Sign in  to Center for Global Engagement
           </h2>
         </CardHeader>
 
