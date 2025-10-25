@@ -24,9 +24,10 @@ export interface VisaCase {
 
 interface DataTableProps {
   data: VisaCase[];
+  onViewEmployee?: (employee: VisaCase) => void;
 }
 
-export function DataTable({ data }: DataTableProps) {
+export function DataTable({ data, onViewEmployee }: DataTableProps) {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "Active":
@@ -44,7 +45,7 @@ export function DataTable({ data }: DataTableProps) {
 
   const getRowBorderColor = (daysLeft: number) => {
     if (daysLeft < 0) return "border-l-4 border-l-[#EF4444]"; // Expired/overdue - Red
-    if (daysLeft <= 60) return "border-l-4 border-l-[#EF4444]"; // ≤30 days - Red
+    if (daysLeft <= 30) return "border-l-4 border-l-[#EF4444]"; // ≤30 days - Red
     if (daysLeft <= 90) return "border-l-4 border-l-[#F59E0B]"; // 31-90 days - Yellow
     return "border-l-4 border-l-[#10B981]"; // 90+ days - Green
   };
@@ -118,7 +119,11 @@ export function DataTable({ data }: DataTableProps) {
               </TableCell>
               <TableCell className="hidden lg:table-cell min-w-[180px]">
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => onViewEmployee?.(row)}
+                  >
                     <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>

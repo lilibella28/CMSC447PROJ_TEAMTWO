@@ -5,20 +5,29 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Users, label: "Employees", active: false },
-  { icon: Building2, label: "Departments", active: false },
-  { icon: FileText, label: "Reports", active: false },
-  { icon: Settings, label: "Settings", active: false },
-];
-
 interface TopNavProps {
   onLogout?: () => void;
+  currentPage?: string;
+  onNavigate?: (page: string) => void;
 }
 
-export function TopNav({ onLogout }: TopNavProps) {
+export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", page: "dashboard", active: currentPage === "dashboard" },
+    { icon: Users, label: "Employees", page: "employees", active: currentPage === "employees" },
+    { icon: Building2, label: "Departments", page: "departments", active: currentPage === "departments" },
+    { icon: FileText, label: "Reports", page: "reports", active: currentPage === "reports" },
+    { icon: Settings, label: "Settings", page: "settings", active: currentPage === "settings" },
+  ];
+
+  const handleNavClick = (e: React.MouseEvent, page: string) => {
+    e.preventDefault();
+    if (onNavigate) {
+      onNavigate(page);
+    }
+  };
 
   return (
     <header className="bg-white border-b border-border sticky top-0 z-50">
@@ -39,7 +48,7 @@ export function TopNav({ onLogout }: TopNavProps) {
             <h1 className="text-xl font-semibold text-black">UMBC</h1>
             <div className="h-0.5 w-8 bg-[#FFCC00]"></div>
           </div>
-          <span className="text-neutral-gray-500 hidden sm:inline">Center for Global Engagement Dashboard  </span>
+          <span className="text-neutral-gray-500 hidden sm:inline">Admin Dashboard</span>
         </div>
 
         {/* Right side - Search, Notifications, Profile */}
@@ -86,6 +95,7 @@ export function TopNav({ onLogout }: TopNavProps) {
               <li key={index}>
                 <a
                   href="#"
+                  onClick={(e) => handleNavClick(e, item.page)}
                   className={`
                     flex items-center py-6 relative transition-colors duration-200
                     ${
@@ -125,7 +135,10 @@ export function TopNav({ onLogout }: TopNavProps) {
                         : "text-[#FFFFFF] hover:bg-[#111111]"
                     }
                   `}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    handleNavClick(e, item.page);
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="ml-2">{item.label}</span>

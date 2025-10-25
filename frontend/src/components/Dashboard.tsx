@@ -10,7 +10,10 @@ const mockVisaCases: VisaCase[] = [
   // HIGHEST PRIORITY - Expired/Overdue (negative days)
   {
     id: "1",
-    employee: { name: "Fatima Al-Rashid", department: "Finance" },
+    employee: {
+      name: "Fatima Al-Rashid",
+      department: "Finance",
+    },
     visaType: "F-1",
     status: "Expired",
     expirationDate: "2024-09-20",
@@ -28,7 +31,10 @@ const mockVisaCases: VisaCase[] = [
   // HIGH PRIORITY - Expiring ≤30 days
   {
     id: "3",
-    employee: { name: "Maria Gonzalez", department: "Marketing" },
+    employee: {
+      name: "Maria Gonzalez",
+      department: "Marketing",
+    },
     visaType: "H-1B",
     status: "Active",
     expirationDate: "2024-11-15",
@@ -54,7 +60,10 @@ const mockVisaCases: VisaCase[] = [
   // EXTENSION NEEDED - Expiring 31-180 days (within 6 months)
   {
     id: "6",
-    employee: { name: "Sofia Petrov", department: "Engineering" },
+    employee: {
+      name: "Sofia Petrov",
+      department: "Engineering",
+    },
     visaType: "H-1B",
     status: "Active",
     expirationDate: "2024-12-20",
@@ -70,7 +79,10 @@ const mockVisaCases: VisaCase[] = [
   },
   {
     id: "8",
-    employee: { name: "Aisha Okonkwo", department: "Marketing" },
+    employee: {
+      name: "Aisha Okonkwo",
+      department: "Marketing",
+    },
     visaType: "F-1",
     status: "Active",
     expirationDate: "2025-03-10",
@@ -88,7 +100,10 @@ const mockVisaCases: VisaCase[] = [
   // LOW PRIORITY - Expiring >180 days (long-term)
   {
     id: "10",
-    employee: { name: "Isabella Rodriguez", department: "Engineering" },
+    employee: {
+      name: "Isabella Rodriguez",
+      department: "Engineering",
+    },
     visaType: "H-1B",
     status: "Active",
     expirationDate: "2025-08-15",
@@ -104,7 +119,10 @@ const mockVisaCases: VisaCase[] = [
   },
   {
     id: "12",
-    employee: { name: "Anastasia Volkov", department: "Finance" },
+    employee: {
+      name: "Anastasia Volkov",
+      department: "Finance",
+    },
     visaType: "Permanent Resident",
     status: "Active",
     expirationDate: "2027-03-20",
@@ -112,7 +130,10 @@ const mockVisaCases: VisaCase[] = [
   },
   {
     id: "13",
-    employee: { name: "Diego Morales", department: "Marketing" },
+    employee: {
+      name: "Diego Morales",
+      department: "Marketing",
+    },
     visaType: "H-1B",
     status: "Active",
     expirationDate: "2025-07-08",
@@ -128,7 +149,15 @@ const mockVisaCases: VisaCase[] = [
   },
 ];
 
-export function Dashboard() {
+interface DashboardProps {
+  onNavigateToAddEmployee?: () => void;
+  onViewEmployee?: (employee: VisaCase) => void;
+}
+
+export function Dashboard({
+  onNavigateToAddEmployee,
+  onViewEmployee,
+}: DashboardProps) {
   // Sort visa cases by priority
   const getPriority = (daysLeft: number) => {
     if (daysLeft < 0) return 1; // Expired/Overdue (Highest Priority)
@@ -140,21 +169,29 @@ export function Dashboard() {
   const sortedVisaCases = [...mockVisaCases].sort((a, b) => {
     const priorityA = getPriority(a.daysLeft);
     const priorityB = getPriority(b.daysLeft);
-    
+
     // First sort by priority
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
-    
+
     // Within same priority group, sort by soonest expiration (ascending daysLeft)
     return a.daysLeft - b.daysLeft;
   });
 
   // Calculate KPI statistics
-  const activeVisas = mockVisaCases.filter(visa => visa.status === "Active").length;
-  const expiringWithin60Days = mockVisaCases.filter(visa => visa.daysLeft > 0 && visa.daysLeft <= 60).length;
-  const expired = mockVisaCases.filter(visa => visa.daysLeft < 0).length;
-  const pending = mockVisaCases.filter(visa => visa.status === "Processing").length;
+  const activeVisas = mockVisaCases.filter(
+    (visa) => visa.status === "Active",
+  ).length;
+  const expiringWithin60Days = mockVisaCases.filter(
+    (visa) => visa.daysLeft > 0 && visa.daysLeft <= 60,
+  ).length;
+  const expired = mockVisaCases.filter(
+    (visa) => visa.daysLeft < 0,
+  ).length;
+  const pending = mockVisaCases.filter(
+    (visa) => visa.status === "Processing",
+  ).length;
   const completed = 312; // Static number for completed cases
 
   return (
@@ -162,15 +199,25 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-black">Live Cases Overview</h1>
-          <p className="text-neutral-gray-500 mt-1">Monitor visa status and expiration dates</p>
+          <h1 className="text-2xl font-semibold text-black">
+            Live Cases Overview
+          </h1>
+          <p className="text-neutral-gray-500 mt-1">
+            Monitor visa status and expiration dates
+          </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" className="border-neutral-gray-200 flex-1 md:flex-none">
+          <Button
+            variant="outline"
+            className="border-neutral-gray-200 flex-1 md:flex-none"
+          >
             <Download className="h-4 w-4 md:mr-2" />
             <span className="hidden md:inline">Export CSV</span>
           </Button>
-          <Button className="bg-black text-[#FFCC00] hover:bg-neutral-gray-900 flex-1 md:flex-none">
+          <Button
+            onClick={onNavigateToAddEmployee}
+            className="bg-black text-[#FFCC00] hover:bg-neutral-gray-900 flex-1 md:flex-none"
+          >
             <Plus className="h-4 w-4 md:mr-2" />
             <span className="hidden sm:inline">New Case</span>
           </Button>
@@ -181,7 +228,8 @@ export function Dashboard() {
       <Alert className="border-[#F59E0B] bg-[#FFF7E6]">
         <AlertTriangle className="h-4 w-4 text-[#F59E0B] flex-shrink-0" />
         <AlertDescription className="text-[#92400E] text-sm">
-          <strong>{expiringWithin60Days} visas</strong> expiring within 60 days. Review and notify employees.
+          <strong>{expiringWithin60Days} visas</strong> expiring
+          within 60 days. Review and notify employees.
         </AlertDescription>
       </Alert>
 
@@ -202,7 +250,10 @@ export function Dashboard() {
           title="Expired"
           value={expired}
           variant="error"
-          badge={{ text: "Action Required", variant: "destructive" }}
+          badge={{
+            text: "Action Required",
+            variant: "destructive",
+          }}
         />
         <StatCard
           title="Pending"
@@ -222,18 +273,26 @@ export function Dashboard() {
       <FilterBar />
 
       {/* Data Table */}
-      <DataTable data={sortedVisaCases} />
+      <DataTable
+        data={sortedVisaCases}
+        onViewEmployee={onViewEmployee}
+      />
 
       {/* Pagination would go here */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
         <p className="text-sm text-neutral-gray-500">
-          Showing {sortedVisaCases.length} of {sortedVisaCases.length} results
+          Showing {sortedVisaCases.length} of{" "}
+          {sortedVisaCases.length} results
         </p>
         <div className="flex items-center space-x-2 justify-center md:justify-end">
           <Button variant="outline" size="sm" disabled>
             Previous
           </Button>
-          <Button variant="outline" size="sm" className="bg-black text-[#FFCC00]">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-black text-[#FFCC00]"
+          >
             1
           </Button>
           <Button variant="outline" size="sm">
