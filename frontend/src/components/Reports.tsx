@@ -317,80 +317,11 @@ export function Reports() {
           </div>
 
           {/* Reporting Toolbar */}
-          <Card className="p-4 border border-[#E5E7EB] md:min-w-[400px]">
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Select value={reportPeriod} onValueChange={setReportPeriod}>
-                  <SelectTrigger className="h-9 rounded-lg border border-[#D1D5DB] bg-white text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fiscal-year">Fiscal Year</SelectItem>
-                    <SelectItem value="academic-year">Academic Year</SelectItem>
-                    <SelectItem value="calendar-year">Calendar Year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="h-9 rounded-lg border border-[#D1D5DB] bg-white text-sm"
-                  placeholder="Start Date"
-                />
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="h-9 rounded-lg border border-[#D1D5DB] bg-white text-sm"
-                  placeholder="End Date"
-                />
-              </div>
-              <Button
-                className="w-full bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90 h-9"
-                size="sm"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Generate Report
-              </Button>
-            </div>
-          </Card>
         </div>
       </div>
 
       {/* Section 1 - Overview Analytics (Always Visible) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 border border-[#E5E7EB] relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFCC00]"></div>
-          <div className="space-y-2">
-            <p className="text-sm text-[#6B7280]">Total Employees</p>
-            <p className="text-3xl font-semibold text-black">{totalEmployees}</p>
-          </div>
-        </Card>
-        <Card className="p-5 border border-[#E5E7EB] relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#10B981]"></div>
-          <div className="space-y-2">
-            <p className="text-sm text-[#6B7280]">Active Visas</p>
-            <p className="text-3xl font-semibold text-black">{activeVisas}</p>
-          </div>
-        </Card>
-        <Card className="p-5 border border-[#E5E7EB] relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#EF4444]"></div>
-          <div className="space-y-2">
-            <p className="text-sm text-[#6B7280]">Expired Visas</p>
-            <p className="text-3xl font-semibold text-black">{expiredVisas}</p>
-          </div>
-        </Card>
-        <Card className="p-5 border border-[#E5E7EB] relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFCC00]"></div>
-          <div className="space-y-2">
-            <p className="text-sm text-[#6B7280]">Avg Stay Duration</p>
-            <p className="text-3xl font-semibold text-black">
-              {avgYears}y {avgMonths}m
-            </p>
-          </div>
-        </Card>
       </div>
       {/* Section 3 - Detailed Employee Data Table */}
       <Card className="p-6 border border-[#E5E7EB]">
@@ -463,7 +394,7 @@ export function Reports() {
 
         {/* Table */}
         <div className="rounded-lg border border-[#E5E7EB] overflow-x-auto">
-          <Table>
+          {/* <Table>
             <TableHeader>
               <TableRow className="bg-[#FAFAFA] hover:bg-[#FAFAFA]">
                 <TableHead className="text-neutral-gray-700 border-b-2 border-[#FFCC00]">
@@ -519,7 +450,7 @@ export function Reports() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </Table> */}
         </div>
 
         <div className="mt-4 text-sm text-[#6B7280]">
