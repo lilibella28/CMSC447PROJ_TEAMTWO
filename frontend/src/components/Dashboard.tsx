@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { StatCard } from "./StatCard";
 import { DataTable, VisaCase } from "./DataTable";
 import { FilterBar } from "./FilterBar";
@@ -158,6 +159,9 @@ export function Dashboard({
   onNavigateToAddEmployee,
   onViewEmployee,
 }: DashboardProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
   // Sort visa cases by priority
   const getPriority = (daysLeft: number) => {
     if (daysLeft < 0) return 1; // Expired/Overdue (Highest Priority)
@@ -166,7 +170,41 @@ export function Dashboard({
     return 4; // Expiring in >180 days (Low Priority)
   };
 
-  const sortedVisaCases = [...mockVisaCases].sort((a, b) => {
+  // Filter visa cases by search query and active filter
+  const filteredVisaCases = mockVisaCases.filter((visaCase) => {
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const employeeName = visaCase.employee.name.toLowerCase();
+      const department = visaCase.employee.department.toLowerCase();
+      const visaType = visaCase.visaType.toLowerCase();
+      const status = visaCase.status.toLowerCase();
+      
+      const matchesSearch = (
+        employeeName.includes(query) ||
+        department.includes(query) ||
+        visaType.includes(query) ||
+        status.includes(query)
+      );
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // Apply StatCard filter
+    if (activeFilter === "active") {
+      return visaCase.status === "Active";
+    } else if (activeFilter === "expiring") {
+      return visaCase.daysLeft > 0 && visaCase.daysLeft <= 60;
+    } else if (activeFilter === "expired") {
+      return visaCase.daysLeft < 0;
+    } else if (activeFilter === "pending") {
+      return visaCase.status === "Processing";
+    }
+    
+    return true;
+  });
+
+  const sortedVisaCases = [...filteredVisaCases].sort((a, b) => {
     const priorityA = getPriority(a.daysLeft);
     const priorityB = getPriority(b.daysLeft);
 
@@ -179,7 +217,7 @@ export function Dashboard({
     return a.daysLeft - b.daysLeft;
   });
 
-  // Calculate KPI statistics
+  // Calculate KPI statistics (always use full dataset for KPIs, not filtered)
   const activeVisas = mockVisaCases.filter(
     (visa) => visa.status === "Active",
   ).length;
@@ -193,6 +231,17 @@ export function Dashboard({
     (visa) => visa.status === "Processing",
   ).length;
   const completed = 312; // Static number for completed cases
+
+  // Handle search query change
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  // Handle StatCard filter click
+  const handleFilterClick = (filterType: string) => {
+    // Toggle filter: if clicking the same filter, clear it; otherwise set new filter
+    setActiveFilter(activeFilter === filterType ? null : filterType);
+  };
 
   return (
     <div className="space-y-6">
@@ -239,12 +288,16 @@ export function Dashboard({
           title="Active Visas"
           value={activeVisas}
           variant="default"
+          onClick={() => handleFilterClick("active")}
+          isActive={activeFilter === "active"}
         />
         <StatCard
           title="Expiring ≤ 60 Days"
           value={expiringWithin60Days}
           variant="warning"
           badge={{ text: "Alert", variant: "warning" }}
+          onClick={() => handleFilterClick("expiring")}
+          isActive={activeFilter === "expiring"}
         />
         <StatCard
           title="Expired"
@@ -254,12 +307,16 @@ export function Dashboard({
             text: "Action Required",
             variant: "destructive",
           }}
+          onClick={() => handleFilterClick("expired")}
+          isActive={activeFilter === "expired"}
         />
         <StatCard
           title="Pending"
           value={pending}
           variant="default"
           badge={{ text: "In Process", variant: "secondary" }}
+          onClick={() => handleFilterClick("pending")}
+          isActive={activeFilter === "pending"}
         />
         <StatCard
           title="Completed"
@@ -270,7 +327,7 @@ export function Dashboard({
       </div>
 
       {/* Filter Bar */}
-      <FilterBar />
+      <FilterBar onSearchChange={handleSearchChange} />
 
       {/* Data Table */}
       <DataTable
@@ -282,7 +339,16 @@ export function Dashboard({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
         <p className="text-sm text-neutral-gray-500">
           Showing {sortedVisaCases.length} of{" "}
-          {sortedVisaCases.length} results
+          {mockVisaCases.length} results
+          {(searchQuery || activeFilter) && (
+            <span className="ml-2 text-[#FFCC00]">
+              (
+              {searchQuery && `search: "${searchQuery}"`}
+              {searchQuery && activeFilter && ", "}
+              {activeFilter && `filter: ${activeFilter}`}
+              )
+            </span>
+          )}
         </p>
         <div className="flex items-center space-x-2 justify-center md:justify-end">
           <Button variant="outline" size="sm" disabled>

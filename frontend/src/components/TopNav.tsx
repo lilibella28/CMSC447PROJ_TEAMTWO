@@ -53,13 +53,6 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopN
 
         {/* Right side - Search, Notifications, Profile */}
         <div className="flex items-center space-x-2 md:space-x-4">
-          <div className="relative hidden lg:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-gray-500 h-4 w-4" />
-            <Input 
-              placeholder="Search..." 
-              className="pl-10 w-64 bg-input-background border-neutral-gray-200"
-            />
-          </div>
           
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -110,7 +103,7 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopN
                   
                   {/* Active state - 2px gold underline */}
                   {item.active && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFCC00]"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2E8b57]"></div>
                   )}
                 </a>
               </li>
@@ -145,7 +138,7 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopN
                   
                   {/* Active state - gold left border on mobile */}
                   {item.active && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FFCC00]"></div>
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2E8b57]"></div>
                   )}
                 </a>
               </li>

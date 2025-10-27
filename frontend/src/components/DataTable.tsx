@@ -31,7 +31,7 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "Active":
-        return "secondary";
+        return "default"; // Will be overridden with custom green styling
       case "Pending":
         return "secondary";
       case "Expired":
@@ -41,6 +41,16 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
       default:
         return "secondary";
     }
+  };
+
+  const getStatusBadgeStyle = (status: string) => {
+    if (status === "Active") {
+      return "bg-[#10B981] text-white border-[#10B981] hover:bg-[#10B981]/90";
+    }
+    if (status === "Processing") {
+      return "bg-[#10B981] text-white border-[#3B82F6] hover:!bg-[#3B82F6]/90";
+    }
+    return "";
   };
 
   const getRowBorderColor = (daysLeft: number) => {
@@ -91,7 +101,10 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
               </TableCell>
               <TableCell className="text-black min-w-[120px]">{row.visaType}</TableCell>
               <TableCell className="min-w-[100px]">
-                <Badge variant={getStatusVariant(row.status)} className="capitalize">
+                <Badge 
+                  variant={getStatusVariant(row.status)} 
+                  className={`capitalize ${getStatusBadgeStyle(row.status)}`}
+                >
                   {row.status}
                 </Badge>
               </TableCell>

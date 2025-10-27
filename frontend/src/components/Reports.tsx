@@ -20,21 +20,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { Calendar, Download, Search, TrendingUp } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
 
 // Mock employee data for reports
 const mockReportData = [
@@ -235,18 +221,6 @@ const mockReportData = [
   },
 ];
 
-// Mock trend data for line chart
-const trendData = [
-  { month: "Jul", avgStay: 28 },
-  { month: "Aug", avgStay: 29 },
-  { month: "Sep", avgStay: 30 },
-  { month: "Oct", avgStay: 31 },
-  { month: "Nov", avgStay: 32 },
-  { month: "Dec", avgStay: 33 },
-  { month: "Jan", avgStay: 34 },
-  { month: "Feb", avgStay: 35 },
-  { month: "Mar", avgStay: 36 },
-];
 
 export function Reports() {
   const [reportPeriod, setReportPeriod] = useState("fiscal-year");
@@ -292,34 +266,8 @@ export function Reports() {
   const avgYears = Math.floor(avgStayMonths / 12);
   const avgMonths = Math.round(avgStayMonths % 12);
 
-  // Chart data - Department breakdown by visa type
-  const departmentData = Object.entries(
-    filteredData.reduce((acc, item) => {
-      if (!acc[item.department]) {
-        acc[item.department] = { department: item.department };
-      }
-      const visaKey = item.visaType.replace(/\s+/g, "").replace(/-/g, "");
-      acc[item.department][visaKey] = (acc[item.department][visaKey] || 0) + 1;
-      return acc;
-    }, {} as Record<string, any>)
-  ).map(([_, data]) => data);
+  
 
-  // Gender distribution
-  const genderData = [
-    {
-      name: "Male",
-      value: filteredData.filter((d) => d.gender === "Male").length,
-    },
-    {
-      name: "Female",
-      value: filteredData.filter((d) => d.gender === "Female").length,
-    },
-  ];
-
-  const COLORS = {
-    Male: "#000000",
-    Female: "#FFCC00",
-  };
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -444,116 +392,6 @@ export function Reports() {
           </div>
         </Card>
       </div>
-
-      {/* Section 2 - Data Visualization */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* A. Visa Distribution by Department */}
-        <Card className="p-6 border border-[#E5E7EB]">
-          <h2 className="text-lg font-semibold text-black mb-4">
-            Visa Distribution by Department
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={departmentData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="department" tick={{ fill: "#6B7280", fontSize: 12 }} />
-              <YAxis tick={{ fill: "#6B7280", fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "8px",
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Bar dataKey="F1" stackId="a" fill="#000000" name="F-1" />
-              <Bar dataKey="H1B" stackId="a" fill="#FFCC00" name="H-1B" />
-              <Bar dataKey="J1" stackId="a" fill="#6B7280" name="J-1" />
-              <Bar dataKey="OPTSTEM" stackId="a" fill="#9CA3AF" name="OPT STEM" />
-              <Bar
-                dataKey="PermanentResident"
-                stackId="a"
-                fill="#D1D5DB"
-                name="Permanent Resident"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* B. Visa Status by Gender */}
-        <Card className="p-6 border border-[#E5E7EB]">
-          <h2 className="text-lg font-semibold text-black mb-4">
-            Visa Status by Gender
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={genderData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                fill="#8884d8"
-                paddingAngle={5}
-                dataKey="value"
-                label={(entry) => `${entry.name}: ${entry.value}`}
-              >
-                {genderData.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={COLORS[entry.name as keyof typeof COLORS]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "8px",
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
-
-      {/* C. Stay Duration Trend (Line Chart) */}
-      <Card className="p-6 border border-[#E5E7EB]">
-        <h2 className="text-lg font-semibold text-black mb-4">
-          Stay Duration Trend
-        </h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="month" tick={{ fill: "#6B7280", fontSize: 12 }} />
-            <YAxis
-              tick={{ fill: "#6B7280", fontSize: 12 }}
-              label={{
-                value: "Average Stay (months)",
-                angle: -90,
-                position: "insideLeft",
-                style: { fill: "#6B7280", fontSize: 12 },
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: "8px",
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="avgStay"
-              stroke="#FFCC00"
-              strokeWidth={3}
-              dot={{ fill: "#FFCC00", r: 5 }}
-              activeDot={{ r: 7 }}
-              name="Avg Stay (months)"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
-
       {/* Section 3 - Detailed Employee Data Table */}
       <Card className="p-6 border border-[#E5E7EB]">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">

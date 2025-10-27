@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Separator } from "./ui/separator";
 import { ArrowLeft, Edit, Plus, Calendar, Mail, Phone, User, Briefcase } from "lucide-react";
-import { VisaCase } from "./DataTable";
+import { VisaCase } from "../../utils/dataService";
 
 interface VisaHistory {
   id: string;
