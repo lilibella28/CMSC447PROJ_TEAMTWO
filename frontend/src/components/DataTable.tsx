@@ -17,7 +17,7 @@ export interface VisaCase {
     department: string;
   };
   visaType: string;
-  status: "Active" | "Pending" | "Expired" | "Processing";
+  status: "Active" | "Pending" | "Expired" | "Pending";
   expirationDate: string;
   daysLeft: number;
 }
@@ -36,7 +36,7 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
         return "secondary";
       case "Expired":
         return "destructive";
-      case "Processing":
+      case "Pending":
         return "secondary";
       default:
         return "secondary";
@@ -47,8 +47,8 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
     if (status === "Active") {
       return "bg-[#10B981] text-white border-[#10B981] hover:bg-[#10B981]/90";
     }
-    if (status === "Processing") {
-      return "bg-[#10B981] text-white border-[#3B82F6] hover:!bg-[#3B82F6]/90";
+    if (status === "Pending") {
+      return "bg-[#3B82F6]] text-white border-[#3B82F6] hover:!bg-[#3B82F6]/90";
     }
     return "";
   };

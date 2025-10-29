@@ -276,7 +276,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                   <SelectContent>
                     <SelectItem value="Active">Active</SelectItem>
                     <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Processing">Processing</SelectItem>
+                    <SelectItem value="Processing">Pending</SelectItem>
                     <SelectItem value="Expired">Expired</SelectItem>
                   </SelectContent>
                 </Select>

@@ -290,7 +290,7 @@ export function Reports() {
       return acc;
     }, {} as Record<string, number>);
     const topDept = Object.entries(deptCounts).sort((a, b) => b[1] - a[1])[0];
-    const processingCount = filteredData.filter((d) => d.status === "Processing").length;
+    const processingCount = filteredData.filter((d) => d.status === "Pending").length;
 
     return [
       `${topDept?.[0] || "Engineering"} holds the highest number of active visas (${topDept?.[1] || 0}).`,

@@ -8,7 +8,7 @@ export interface Employee {
   employeeName: string;
   department: string;
   visaType: string;
-  status: "Active" | "Pending" | "Expired" | "Processing";
+  status: "Active" | "Pending" | "Expired" | "Pending";
   expirationDate: string;
   visaStartDate: string;
   email: string;
@@ -31,7 +31,7 @@ export interface VisaCase {
     phone?: string;
   };
   visaType: string;
-  status: "Active" | "Pending" | "Expired" | "Processing";
+  status: "Active" | "Expired" | "Pending";
   expirationDate: string;
   visaStartDate: string;
   daysLeft: number;

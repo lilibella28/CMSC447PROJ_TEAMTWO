@@ -6,7 +6,7 @@ export interface EmployeeData {
     employeeName: string;
     department: string;
     visaType: string;
-    status: "Active" | "Pending" | "Expired" | "Processing";
+    status: "Active" | "Expired" | "Pending";
     expirationDate: string;
     visaStartDate: string;
     email: string;
@@ -139,7 +139,7 @@ export interface EmployeeData {
       employeeName: "Olumide Adebayo",
       department: "HR",
       visaType: "F-1",
-      status: "Processing",
+      status: "Pending",
       expirationDate: "2024-11-30",
       visaStartDate: "2023-11-30",
       email: "olumide.adebayo@example.com",

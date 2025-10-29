@@ -93,7 +93,7 @@ export function EmployeeProfile({ employee, onBack }: EmployeeProfileProps) {
         return "default";
       case "Expired":
         return "destructive";
-      case "Processing":
+      case "Pending":
         return "secondary";
       default:
         return "default";

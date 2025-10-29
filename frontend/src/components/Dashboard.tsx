@@ -53,7 +53,7 @@ const mockVisaCases: VisaCase[] = [
     id: "5",
     employee: { name: "Olumide Adebayo", department: "HR" },
     visaType: "F-1",
-    status: "Processing",
+    status: "Pending",
     expirationDate: "2024-11-30",
     daysLeft: 27,
   },
@@ -198,7 +198,7 @@ export function Dashboard({
     } else if (activeFilter === "expired") {
       return visaCase.daysLeft < 0;
     } else if (activeFilter === "pending") {
-      return visaCase.status === "Processing";
+      return visaCase.status === "Pending";
     }
     
     return true;
