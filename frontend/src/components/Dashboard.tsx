@@ -80,13 +80,13 @@ export function Dashboard({
     totalVisas: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [visaTypeFilter, setVisaTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -176,14 +176,15 @@ export function Dashboard({
     // First, sort by status priority
     const priorityA = getStatusPriority(a.status);
     const priorityB = getStatusPriority(b.status);
-    
+
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
-    
+
     // Within same priority group, sort alphabetically by last name
-    const lastNameA = a.employee.name.split(" ").pop() || "";
-    const lastNameB = b.employee.name.split(" ").pop() || "";
+    const lastNameA = (a.employee?.name || "").split(" ").pop() || "";
+    const lastNameB = (b.employee?.name || "").split(" ").pop() || "";
+
     return lastNameA.localeCompare(lastNameB);
   });
 
@@ -544,97 +545,97 @@ export function Dashboard({
                     </TableRow>
                   ) : (
                     paginatedCases.map((employee, index) => (
-                    <TableRow
-                      key={employee.id}
-                      className={`
+                      <TableRow
+                        key={employee.id}
+                        className={`
                         border-b border-[#E5E5E5] transition-colors cursor-pointer
                         ${index % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"}
                         hover:bg-[#E9F2FF]
                       `}
-                      onClick={() => onViewEmployee?.(employee)}
-                    >
-                      <TableCell>
-                        <span className="text-sm text-[#1E1E1E] font-medium">
-                          {employee.employee.name}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm text-[#4A4A4A]">
-                        {employee.employee.department}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#4A4A4A]">
-                        {employee.visaType}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusBadgeStyle(employee.status)}>
-                          {employee.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-[#4A4A4A]">
-                        {new Date(employee.expirationDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        {(() => {
-                          const daysInfo = formatDaysRemaining(employee.daysLeft);
-                          return (
-                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${daysInfo.bgColor}`}>
-                              {daysInfo.icon}
-                              <span className={`text-sm font-medium ${daysInfo.color}`}>
-                                {daysInfo.text}
-                              </span>
-                            </div>
-                          );
-                        })()}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#4A4A4A]">
-                        {employee.status === "Expired" ? (
-                          <span className="text-[#DC2626] font-medium">Highest Priority</span>
-                        ) : employee.daysLeft < 60 && employee.daysLeft >= 0 ? (
-                          <span className="text-[#F59E0B] font-medium">Extension Needed</span>
-                        ) : null}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewEmployee?.(employee);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditEmployee?.(employee);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.location.href = `mailto:${employee.employee.email}`;
-                            }}
-                          >
-                            <Mail className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        onClick={() => onViewEmployee?.(employee)}
+                      >
+                        <TableCell>
+                          <span className="text-sm text-[#1E1E1E] font-medium">
+                            {employee.employee.name}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-[#4A4A4A]">
+                          {employee.employee.department}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#4A4A4A]">
+                          {employee.visaType}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusBadgeStyle(employee.status)}>
+                            {employee.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-[#4A4A4A]">
+                          {new Date(employee.expirationDate).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const daysInfo = formatDaysRemaining(employee.daysLeft);
+                            return (
+                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${daysInfo.bgColor}`}>
+                                {daysInfo.icon}
+                                <span className={`text-sm font-medium ${daysInfo.color}`}>
+                                  {daysInfo.text}
+                                </span>
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#4A4A4A]">
+                          {employee.status === "Expired" ? (
+                            <span className="text-[#DC2626] font-medium">Highest Priority</span>
+                          ) : employee.daysLeft < 60 && employee.daysLeft >= 0 ? (
+                            <span className="text-[#F59E0B] font-medium">Extension Needed</span>
+                          ) : null}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewEmployee?.(employee);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditEmployee?.(employee);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.location.href = `mailto:${employee.employee.email}`;
+                              }}
+                            >
+                              <Mail className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   )}
                 </TableBody>
               </Table>
@@ -688,11 +689,10 @@ export function Dashboard({
                           variant={currentPage === pageNum ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`h-9 w-9 p-0 ${
-                            currentPage === pageNum
+                          className={`h-9 w-9 p-0 ${currentPage === pageNum
                               ? "bg-[#5B8DEF] text-white hover:bg-[#4A7DD8]"
                               : "border-[#E1E1E1]"
-                          }`}
+                            }`}
                         >
                           {pageNum}
                         </Button>

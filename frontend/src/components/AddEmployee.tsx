@@ -141,6 +141,30 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSave = async (employeeData: any) => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/employees/newcase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(employeeData),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        console.log("✅ Employee created successfully:", result);
+        alert("Employee added successfully!");
+      } else {
+        console.error("❌ Error creating employee:", result.error);
+        alert("Error saving employee: " + result.error);
+      }
+    } catch (err) {
+      console.error("❌ Network error:", err);
+      alert("Network error. Please check your backend connection.");
+    }
+  };
+  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -158,7 +182,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
         i94ExpiryDate: dates.i94ExpiryDate ? format(dates.i94ExpiryDate, "yyyy-MM-dd") : null,
         prFilingDate: dates.prFilingDate ? format(dates.prFilingDate, "yyyy-MM-dd") : null,
       };
-      onSave(employeeData);
+      handleSave(employeeData); 
     }
   };
 

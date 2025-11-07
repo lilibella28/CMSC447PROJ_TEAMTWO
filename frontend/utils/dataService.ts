@@ -134,30 +134,21 @@ function employeeToVisaCase(employee: Employee): VisaCase {
  */
 export async function fetchVisaCases(): Promise<VisaCase[]> {
   try {
-    // Current implementation: Load from employeesData.ts
-    // Simulate async behavior to match future API calls
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    const employees: Employee[] = Array.isArray(employeesData) 
-      ? employeesData as Employee[]
-      : [];
-    
-    console.log('✅ Loaded employees:', employees.length); // Debug log
-    return employees.map(employeeToVisaCase);
-    
-    // Future API implementation (uncomment when Flask API is ready):
-    // const response = await fetch('http://localhost:5000/api/visa-cases');
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
-    // const data = await response.json();
-    // return data;
-    
+    const response = await fetch("http://127.0.0.1:5000/api/employees");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const employees = await response.json();
+    console.log("✅ Loaded employees from backend:", employees.length);
+
+    return employees.map((emp: any) => employeeToVisaCase(emp));
   } catch (error) {
-    console.error('Error fetching visa cases:', error);
-    return []; // Return empty array instead of throwing
+    console.error("❌ Error fetching visa cases:", error);
+    return [];
   }
 }
+
 
 /**
  * Fetch all employees from local data
@@ -165,78 +156,64 @@ export async function fetchVisaCases(): Promise<VisaCase[]> {
  */
 export async function fetchEmployees(): Promise<Employee[]> {
   try {
-    // Current implementation: Load from employeesData.ts
-    // Simulate async behavior to match future API calls
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    const employees = Array.isArray(employeesData) 
-      ? employeesData as Employee[]
-      : [];
-    
-    console.log('✅ Loaded employees for fetchEmployees:', employees.length); // Debug log
-    return employees;
-    
-    // Future API implementation (uncomment when Flask API is ready):
-    // const response = await fetch('http://localhost:5000/api/employees');
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
-    // const data = await response.json();
-    // return data;
-    
+    const response = await fetch("http://127.0.0.1:5000/api/employees");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Loaded employees for fetchEmployees:", data.length);
+    return data;
   } catch (error) {
-    console.error('Error fetching employees:', error);
-    return []; // Return empty array instead of throwing
+    console.error("❌ Error fetching employees:", error);
+    return [];
   }
 }
+
 
 /**
  * Fetch single employee by ID
  * TODO: Replace with API call to: GET /api/employees/:id
  */
+
 export async function fetchEmployeeById(id: string): Promise<Employee | null> {
   try {
-    // Current implementation: Load from JSON and filter
-    const employees = await fetchEmployees();
-    return employees.find(emp => emp.id.toString() === id) || null;
-    
-    // Future API implementation (commented out):
-    // const response = await fetch(`http://localhost:5000/api/employees/${id}`);
-    // const data = await response.json();
-    // return data;
-    
+    const response = await fetch(`http://127.0.0.1:5000/api/employees/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log("✅ Loaded employee from Flask:", data);
+    return data;
   } catch (error) {
-    console.error('Error fetching employee:', error);
-    throw error;
+    console.error("❌ Error fetching employee:", error);
+    return null;
   }
 }
+
+
 
 /**
  * Create new employee
  * TODO: Replace with API call to: POST /api/employees
  */
-export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promise<Employee> {
+export async function createEmployee(employeeData: Omit<Employee, "id">): Promise<Employee> {
   try {
-    // Current implementation: Mock creation (doesn't persist to JSON)
-    const newEmployee: Employee = {
-      id: Date.now(),
-      ...employeeData,
-    };
-    
-    console.log('Employee created (mock):', newEmployee);
-    return newEmployee;
-    
-    // Future API implementation (commented out):
-    // const response = await fetch('http://localhost:5000/api/employees', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(employeeData),
-    // });
-    // const data = await response.json();
-    // return data;
-    
+    const response = await fetch("http://127.0.0.1:5000/api/employees/newcase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(employeeData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Employee created successfully:", data.employee);
+    return data.employee;
   } catch (error) {
-    console.error('Error creating employee:', error);
+    console.error("❌ Error creating employee:", error);
     throw error;
   }
 }
@@ -247,32 +224,25 @@ export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promis
  */
 export async function updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee> {
   try {
-    // Current implementation: Mock update (doesn't persist to CSV)
-    const employees = await fetchEmployees();
-    const employee = employees.find(emp => emp.id === id);
-    
-    if (!employee) {
-      throw new Error(`Employee with ID ${id} not found`);
+    const response = await fetch(`http://127.0.0.1:5000/api/employees/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(employeeData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
-    const updatedEmployee = { ...employee, ...employeeData };
-    console.log('Employee updated (mock):', updatedEmployee);
-    return updatedEmployee;
-    
-    // Future API implementation (commented out):
-    // const response = await fetch(`http://localhost:5000/api/employees/${id}`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(employeeData),
-    // });
-    // const data = await response.json();
-    // return data;
-    
+
+    const updated = await response.json();
+    console.log("✅ Employee updated successfully:", updated);
+    return updated;
   } catch (error) {
-    console.error('Error updating employee:', error);
+    console.error("❌ Error updating employee:", error);
     throw error;
   }
 }
+
 
 /**
  * Delete employee
