@@ -1,26 +1,76 @@
 // Data Service - Handles data fetching from local data (will be replaced with API calls)
 // This abstraction makes it easy to switch from local data to API without changing components
 
-import { employeesData } from './employeeData';
+import { Dependent, PendingVisaApplication } from './employeeData';
+import { calculateVisaStatus, calculateDaysRemaining } from './visaStatusUtils';
+import { employeesData } from './EmployeesData';
+
+export interface SalaryRecord {
+  effectiveDate: string;
+  amount: number;
+  position: string;
+  changeReason?: string;
+}
+
+export interface PermanentResidencyInfo {
+  filingDate?: string;
+  currentStatus?: "Not Started" | "Filed" | "Awaiting Response" | "Approved" | "Denied";
+  notes?: string;
+}
 
 export interface Employee {
   id: number;
   employeeName: string;
-  department: string;
-  visaType: string;
-  status: "Active" | "Pending" | "Expired" | "Pending";
-  expirationDate: string;
-  visaStartDate: string;
-  email: string;
+  // Personal Information
+  firstName?: string;
+  lastName?: string;
+  personalEmail?: string;
+  gender?: "Male" | "Female" | "Non-binary" | "Prefer not to say" | string;
+  countryOfBirth?: string;
+  citizenships?: string[]; // Array of countries
+  // Contact & Identity
+  email: string; // UMBC Email
   phone: string;
   address: string;
   nationality: string;
   dateOfBirth: string;
   passportNumber: string;
-  i94Number: string;
-  sevisId: string;
+  // Employment Information
+  department: string;
+  employeeTitle?: string; // Position/Job Title
+  departmentAdmin?: string;
+  departmentAdvisor?: string; // PI / Chair
+  annualSalary?: number;
   startDate: string;
+  salaryHistory: SalaryRecord[];
+  // Visa & Immigration
+  visaType: string;
+  status: "Active" | "Pending" | "Expired" | "Processing" | "Expiring Soon";
+  visaStartDate: string;
+  expirationDate: string;
+  visaFiledBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
+  caseType?: string; // e.g., "H-1B Extension", "Initial COS", "Change of Status"
+  initialH1BStartDate?: string;
+  prepExtensionDate?: string; // Reminder field for when to prep extension
+  maxHPeriod?: string; // Max H-1B period end date
+  i94Number: string;
+  i94ExpiryDate?: string;
+  sevisId: string;
+  permanentResidency?: PermanentResidencyInfo;
+  // Dependents
+  dependents: number;
+  dependentsDetails: Dependent[];
+  pendingVisaApplication?: PendingVisaApplication;
+  // Education
+  highestEducation?: "High School" | "Associate" | "Bachelor's" | "Master's" | "Doctorate" | "Other";
+  fieldOfStudy?: string;
+  // Administrative
+  socCode?: string;
+  socCodeDescription?: string;
+  generalNotes?: string;
 }
+
+export type { Dependent, PendingVisaApplication };
 
 export interface VisaCase {
   id: string;
@@ -31,10 +81,13 @@ export interface VisaCase {
     phone?: string;
   };
   visaType: string;
-  status: "Active" | "Expired" | "Pending";
+  status: "Active" | "Pending" | "Expired" | "Processing" | "Expiring Soon";
   expirationDate: string;
   visaStartDate: string;
   daysLeft: number;
+  visaFiledBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
+  hasPendingApplication?: boolean;
+  pendingTargetVisaType?: string;
 }
 
 // Calculate days left until expiration
@@ -48,6 +101,10 @@ function calculateDaysLeft(expirationDate: string): number {
 
 // Convert Employee to VisaCase format
 function employeeToVisaCase(employee: Employee): VisaCase {
+  const hasPendingApplication = !!employee.pendingVisaApplication;
+  const daysLeft = calculateDaysRemaining(employee.expirationDate);
+  const computedStatus = calculateVisaStatus(employee.expirationDate, hasPendingApplication);
+  
   return {
     id: employee.id.toString(),
     employee: {
@@ -57,10 +114,13 @@ function employeeToVisaCase(employee: Employee): VisaCase {
       phone: employee.phone,
     },
     visaType: employee.visaType,
-    status: employee.status,
+    status: computedStatus, // Use computed status instead of stored status
     expirationDate: employee.expirationDate,
-    visaStartDate: employee.visaStartDate,
-    daysLeft: calculateDaysLeft(employee.expirationDate),
+    visaStartDate: employee.visaStartDate || employee.startDate,
+    daysLeft: daysLeft,
+    visaFiledBy: employee.visaFiledBy,
+    hasPendingApplication: hasPendingApplication,
+    pendingTargetVisaType: employee.pendingVisaApplication?.targetVisaType,
   };
 }
 
@@ -74,14 +134,18 @@ function employeeToVisaCase(employee: Employee): VisaCase {
  */
 export async function fetchVisaCases(): Promise<VisaCase[]> {
   try {
-    // Current implementation: Load from local TypeScript data
+    // Current implementation: Load from employeesData.ts
     // Simulate async behavior to match future API calls
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     
-    const employees: Employee[] = employeesData as Employee[];
+    const employees: Employee[] = Array.isArray(employeesData) 
+      ? employeesData as Employee[]
+      : [];
+    
+    console.log('✅ Loaded employees:', employees.length); // Debug log
     return employees.map(employeeToVisaCase);
     
-    // Future API implementation (commented out):
+    // Future API implementation (uncomment when Flask API is ready):
     // const response = await fetch('http://localhost:5000/api/visa-cases');
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
@@ -91,7 +155,7 @@ export async function fetchVisaCases(): Promise<VisaCase[]> {
     
   } catch (error) {
     console.error('Error fetching visa cases:', error);
-    throw error;
+    return []; // Return empty array instead of throwing
   }
 }
 
@@ -101,13 +165,18 @@ export async function fetchVisaCases(): Promise<VisaCase[]> {
  */
 export async function fetchEmployees(): Promise<Employee[]> {
   try {
-    // Current implementation: Load from local TypeScript data
+    // Current implementation: Load from employeesData.ts
     // Simulate async behavior to match future API calls
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     
-    return employeesData as Employee[];
+    const employees = Array.isArray(employeesData) 
+      ? employeesData as Employee[]
+      : [];
     
-    // Future API implementation (commented out):
+    console.log('✅ Loaded employees for fetchEmployees:', employees.length); // Debug log
+    return employees;
+    
+    // Future API implementation (uncomment when Flask API is ready):
     // const response = await fetch('http://localhost:5000/api/employees');
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
@@ -117,7 +186,7 @@ export async function fetchEmployees(): Promise<Employee[]> {
     
   } catch (error) {
     console.error('Error fetching employees:', error);
-    throw error;
+    return []; // Return empty array instead of throwing
   }
 }
 
@@ -148,9 +217,9 @@ export async function fetchEmployeeById(id: string): Promise<Employee | null> {
  */
 export async function createEmployee(employeeData: Omit<Employee, 'id'>): Promise<Employee> {
   try {
-    // Current implementation: Mock creation (doesn't persist to CSV)
+    // Current implementation: Mock creation (doesn't persist to JSON)
     const newEmployee: Employee = {
-      id: Date.now().toString(),
+      id: Date.now(),
       ...employeeData,
     };
     
@@ -244,7 +313,7 @@ export async function fetchStatistics() {
       expiringWithin60Days: visaCases.filter(v => v.daysLeft > 0 && v.daysLeft <= 60).length,
       expired: visaCases.filter(v => v.daysLeft < 0).length,
       pending: visaCases.filter(v => v.status === "Processing").length,
-      completed: 312, // Static for now
+      totalVisas: visaCases.length,
     };
     
     // Future API implementation (commented out):

@@ -17,11 +17,11 @@ export function StatCard({ title, value, variant = "default", badge, onClick, is
   const getAccentColor = () => {
     switch (variant) {
       case "warning":
-        return "bg-[#F59E0B]";
+        return "bg-[#EFB74A]";
       case "error":
-        return "bg-[#EF4444]";
+        return "bg-[#D86464]";
       case "success":
-        return "bg-[#10B981]";
+        return "bg-[#5BB974]";
       default:
         return "bg-[#FFCC00]";
     }

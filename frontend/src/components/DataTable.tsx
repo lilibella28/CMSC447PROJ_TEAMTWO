@@ -8,19 +8,16 @@ import {
 } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Mail, Eye } from "lucide-react";
+import { Mail, Eye, Clock, AlertCircle } from "lucide-react";
+import { VisaCase } from "../utils/dataService";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
-export interface VisaCase {
-  id: string;
-  employee: {
-    name: string;
-    department: string;
-  };
-  visaType: string;
-  status: "Active" | "Pending" | "Expired" | "Pending";
-  expirationDate: string;
-  daysLeft: number;
-}
+// Re-export VisaCase for backward compatibility
+export type { VisaCase };
 
 interface DataTableProps {
   data: VisaCase[];
@@ -31,13 +28,15 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "Active":
-        return "default"; // Will be overridden with custom green styling
+        return "outline"; // Outline variant has less conflicting styles
       case "Pending":
         return "secondary";
       case "Expired":
         return "destructive";
-      case "Pending":
-        return "secondary";
+      case "Processing":
+        return "outline"; // Outline variant has less conflicting styles
+      case "Expiring Soon":
+        return "outline";
       default:
         return "secondary";
     }
@@ -45,19 +44,25 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
 
   const getStatusBadgeStyle = (status: string) => {
     if (status === "Active") {
-      return "bg-[#10B981] text-white border-[#10B981] hover:bg-[#10B981]/90";
+      return "!bg-[#5BB974] !text-white !border-[#5BB974] hover:!bg-[#5BB974]/90";
     }
-    if (status === "Pending") {
-      return "bg-[#3B82F6]] text-white border-[#3B82F6] hover:!bg-[#3B82F6]/90";
+    if (status === "Expired") {
+      return "!bg-[#D86464] !text-white !border-[#D86464] hover:!bg-[#D86464]/90";
+    }
+    if (status === "Processing" || status === "Pending") {
+      return "!bg-[#9E9E9E] !text-white !border-[#9E9E9E] hover:!bg-[#9E9E9E]/90";
+    }
+    if (status === "Expiring Soon") {
+      return "!bg-[#EFB74A] !text-white !border-[#EFB74A] hover:!bg-[#EFB74A]/90";
     }
     return "";
   };
 
   const getRowBorderColor = (daysLeft: number) => {
-    if (daysLeft < 0) return "border-l-4 border-l-[#EF4444]"; // Expired/overdue - Red
-    if (daysLeft <= 30) return "border-l-4 border-l-[#EF4444]"; // ≤30 days - Red
-    if (daysLeft <= 90) return "border-l-4 border-l-[#F59E0B]"; // 31-90 days - Yellow
-    return "border-l-4 border-l-[#10B981]"; // 90+ days - Green
+    if (daysLeft < 0) return "border-l-4 border-l-[#D86464]"; // Expired/overdue - Red
+    if (daysLeft <= 30) return "border-l-4 border-l-[#D86464]"; // ≤30 days - Red
+    if (daysLeft <= 90) return "border-l-4 border-l-[#EFB74A]"; // 31-90 days - Yellow
+    return "border-l-4 border-l-[#5BB974]"; // 90+ days - Green
   };
 
   const getDateChipStyle = (daysLeft: number) => {
@@ -101,12 +106,27 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
               </TableCell>
               <TableCell className="text-black min-w-[120px]">{row.visaType}</TableCell>
               <TableCell className="min-w-[100px]">
-                <Badge 
-                  variant={getStatusVariant(row.status)} 
-                  className={`capitalize ${getStatusBadgeStyle(row.status)}`}
-                >
-                  {row.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant={getStatusVariant(row.status)} 
+                    className={`capitalize ${getStatusBadgeStyle(row.status)}`}
+                  >
+                    {row.status}
+                  </Badge>
+                  {row.status === "Expired" && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge className="bg-[#DC2626] text-white border-[#DC2626] hover:bg-[#DC2626]/90 flex items-center gap-1 cursor-help whitespace-nowrap">
+                          <AlertCircle className="h-3 w-3" />
+                          Highest Priority
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>This employee's visa has expired and needs action.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="min-w-[180px]">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -119,7 +139,7 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
                     </Badge>
                   )}
                   {row.daysLeft < 0 && (
-                    <Badge className="bg-[#EF4444] text-white hover:bg-[#EF4444]/90 border-[#EF4444]">
+                    <Badge className="bg-[#D86464] text-white hover:bg-[#D86464]/90 border-[#D86464]">
                       Highest Priority
                     </Badge>
                   )}

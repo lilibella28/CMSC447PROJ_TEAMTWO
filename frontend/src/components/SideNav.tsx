@@ -2,19 +2,26 @@ import { LayoutDashboard, Users, FileText, Settings, Building2, X } from "lucide
 import { Button } from "./ui/button";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Users, label: "Employees", active: false },
-  { icon: Building2, label: "Departments", active: false },
-  { icon: FileText, label: "Reports", active: false },
-  { icon: Settings, label: "Settings", active: false },
+  { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
+  { icon: Users, label: "Employees", id: "employees" },
+  { icon: Building2, label: "Departments", id: "departments" },
+  { icon: FileText, label: "Reports", id: "reports" },
+  { icon: Settings, label: "Settings", id: "settings" },
 ];
 
 interface SideNavProps {
   isOpen?: boolean;
   onClose?: () => void;
+  activePage?: string;
+  onNavigate?: (page: string) => void;
 }
 
-export function SideNav({ isOpen = false, onClose }: SideNavProps) {
+export function SideNav({ isOpen = false, onClose, activePage = "dashboard", onNavigate }: SideNavProps) {
+  const handleNavClick = (pageId: string) => {
+    onNavigate?.(pageId);
+    onClose?.();
+  };
+
   return (
     <>
       {/* Mobile overlay */}
@@ -56,33 +63,35 @@ export function SideNav({ isOpen = false, onClose }: SideNavProps) {
         {/* Navigation Items - Vertical Stack */}
         <div className="flex-1 pt-6 pb-6">
           <ul>
-            {navItems.map((item, index) => (
-              <li key={index} className={index > 0 ? "mt-4" : ""}>
-                <a
-                  href="#"
-                  className={`
-                    flex items-center px-6 py-3 relative transition-all duration-200
-                    ${
-                      item.active
-                        ? "text-[#FFFFFF]"
-                        : "text-[#FFFFFF] hover:bg-[#111111]"
-                    }
-                  `}
-                  onClick={() => onClose?.()}
-                >
-                  {/* Active state - 4px gold accent bar on left */}
-                  {item.active && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FFCC00]"></div>
-                  )}
-                  
-                  {/* Icon with 8px gap */}
-                  <item.icon className="h-5 w-5 text-[#FFFFFF]" />
-                  
-                  {/* Label with 8px gap (gap-2 = 8px) */}
-                  <span className="ml-2 text-[#FFFFFF]">{item.label}</span>
-                </a>
-              </li>
-            ))}
+            {navItems.map((item, index) => {
+              const isActive = activePage === item.id;
+              return (
+                <li key={item.id} className={index > 0 ? "mt-4" : ""}>
+                  <button
+                    onClick={() => handleNavClick(item.id)}
+                    className={`
+                      w-full flex items-center px-6 py-3 relative transition-all duration-200
+                      ${
+                        isActive
+                          ? "text-[#FFFFFF]"
+                          : "text-[#FFFFFF] hover:bg-[#111111]"
+                      }
+                    `}
+                  >
+                    {/* Active state - 4px gold accent bar on left */}
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FFCC00]"></div>
+                    )}
+                    
+                    {/* Icon with 8px gap */}
+                    <item.icon className="h-5 w-5 text-[#FFFFFF]" />
+                    
+                    {/* Label with 8px gap (gap-2 = 8px) */}
+                    <span className="ml-2 text-[#FFFFFF]">{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </nav>

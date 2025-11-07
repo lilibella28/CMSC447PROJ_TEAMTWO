@@ -3,14 +3,18 @@ import { AppShell } from "./components/AppShell";
 import { Dashboard } from "./components/Dashboard";
 import { Login } from "./components/Login";
 import { AddEmployee } from "./components/AddEmployee";
+import { EditEmployee } from "./components/EditEmployee";
 import { Employees } from "./components/Employees";
 import { EmployeeProfile } from "./components/EmployeeProfile";
+import { Departments } from "./components/Deparments";
+import { ImportEmployees } from "./components/importEmployees";
 import { Reports } from "./components/Reports";
+import { Settings } from "./components/Settings";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
-import { VisaCase } from "./components/DataTable";
+import { VisaCase } from "../utils/dataService";
 
-type Page = "dashboard" | "add-employee" | "employees" | "employee-profile" | "reports" | "departments" | "settings";
+type Page = "dashboard" | "add-employee" | "edit-employee" | "employees" | "employee-profile" | "reports" | "departments" | "import" | "settings";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,6 +40,10 @@ export default function App() {
     setCurrentPage("add-employee");
   };
 
+  const handleNavigateToImport = () => {
+    setCurrentPage("import");
+  };
+
   const handleNavigateToDashboard = () => {
     setCurrentPage("dashboard");
   };
@@ -50,6 +58,11 @@ export default function App() {
     setCurrentPage("employees");
   };
 
+  const handleEditEmployee = (employee: VisaCase) => {
+    setSelectedEmployee(employee);
+    setCurrentPage("edit-employee");
+  };
+
   const handleSaveEmployee = (employeeData: any) => {
     console.log("Employee data saved:", employeeData);
     // Here you would typically save to a backend/database
@@ -61,6 +74,11 @@ export default function App() {
       description: `${employeeData.firstName} ${employeeData.lastName} has been added to the system.`,
       duration: 4000,
     });
+  };
+
+  const handleUpdateEmployee = () => {
+    // Navigate back to profile after successful update
+    setCurrentPage("employee-profile");
   };
 
   if (!isAuthenticated) {
@@ -82,24 +100,49 @@ export default function App() {
             onSave={handleSaveEmployee}
           />
         );
+      case "edit-employee":
+        if (!selectedEmployee) return <Employees onViewEmployee={handleViewEmployee} />;
+        return (
+          <EditEmployee 
+            employee={selectedEmployee}
+            onCancel={() => setCurrentPage("employee-profile")}
+            onSave={handleUpdateEmployee}
+          />
+        );
       case "employees":
-        return <Employees onViewEmployee={handleViewEmployee} />;
+        return (
+          <Employees 
+            onViewEmployee={handleViewEmployee}
+            onNavigateToAddEmployee={handleNavigateToAddEmployee}
+            onNavigateToImport={handleNavigateToImport}
+            onEditEmployee={handleEditEmployee}
+          />
+        );
       case "employee-profile":
         if (!selectedEmployee) return <Employees onViewEmployee={handleViewEmployee} />;
         return (
           <EmployeeProfile 
             employee={selectedEmployee}
             onBack={handleBackFromProfile}
+            onEdit={() => handleEditEmployee(selectedEmployee)}
           />
         );
+      case "departments":
+        return <Departments />;
+      case "import":
+        return <ImportEmployees />;
       case "reports":
         return <Reports />;
+      case "settings":
+        return <Settings />;
       case "dashboard":
       default:
         return (
           <Dashboard 
             onNavigateToAddEmployee={handleNavigateToAddEmployee}
+            onNavigateToImport={handleNavigateToImport}
             onViewEmployee={handleViewEmployee}
+            onEditEmployee={handleEditEmployee}
           />
         );
     }

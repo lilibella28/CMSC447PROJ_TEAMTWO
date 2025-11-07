@@ -6,9 +6,10 @@ import { Badge } from "./ui/badge";
 
 interface FilterBarProps {
   onFilterChange?: (filters: any) => void;
+  onSearchChange?: (query: string) => void;
 }
 
-export function FilterBar({ onFilterChange }: FilterBarProps) {
+export function FilterBar({ onFilterChange, onSearchChange }: FilterBarProps) {
   const activeFilters = [
     { label: "H-1B", type: "visaType" },
     { label: "Engineering", type: "department" },
@@ -81,6 +82,7 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
           <Input 
             placeholder="Search employees..." 
             className="pl-10 w-full lg:w-64 bg-input-background border-neutral-gray-200"
+            onChange={(e) => onSearchChange?.(e.target.value)}
           />
         </div>
         

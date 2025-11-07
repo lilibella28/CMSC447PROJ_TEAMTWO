@@ -33,6 +33,7 @@
             "class-variance-authority": "^0.7.1",
             "clsx": "*",
             "cmdk": "^1.1.1",
+            "date-fns": "*",
             "embla-carousel-react": "^8.6.0",
             "input-otp": "^1.4.2",
             "lucide-react": "^0.487.0",
@@ -47,14 +48,12 @@
             "sonner": "^2.0.3",
             "tailwind-merge": "*",
             "vaul": "^1.1.2",
-            "vite": "*"
+            "vite": "*",
+            "xlsx": "*"
       },
       "devDependencies": {
             "@types/node": "^20.10.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
-            "autoprefixer": "^10.4.21",
-            "postcss": "^8.5.6",
-            "tailwindcss": "^4.1.15",
             "vite": "6.3.5"
       },
       "scripts": {
