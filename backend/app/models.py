@@ -41,6 +41,7 @@ class Employee(db.Model):
     def __repr__(self):
         return f"<Employee {self.id}: {self.first_name} {self.last_name}>"
 
+"""
 class VisaType(db.Model):
     __tablename__ = "visa_types"
     id = db.Column(db.Integer, primary_key=True)
@@ -50,6 +51,7 @@ class VisaType(db.Model):
     visas = db.relationship("Visa", back_populates="visa_type")
     def __repr__(self):
         return f"<VisaType {self.name}>"
+"""
 
 VisaStatusEnum = ENUM("valid", "expiring_soon", "expired", "pending",
                       name="visa_status_enum")
@@ -68,10 +70,12 @@ class Visa(db.Model):
     employee_id = db.Column(db.Integer,
                             db.ForeignKey("employees.id", ondelete="CASCADE"),
                             nullable=False, index=True)
+    """
     visa_type_id = db.Column(db.Integer,
                              db.ForeignKey("visa_types.id", ondelete="SET NULL"),
                              nullable=True)
-
+    """
+    
     # Timeline
     start_date          = db.Column(db.Date, nullable=True)
     expiration_date     = db.Column(db.Date, nullable=True)
@@ -80,6 +84,7 @@ class Visa(db.Model):
     document_expiry_i94 = db.Column(db.Date, nullable=True)
 
     # Admin / metadata from Excel
+    permanent_residency_notes = db.Column(db.Text, nullable=True)
     general_notes   = db.Column(db.Text, nullable=True)
     soc_code        = db.Column(db.String(20),  nullable=True)
     soc_description = db.Column(db.String(255), nullable=True)
@@ -98,13 +103,13 @@ class Visa(db.Model):
 
     # Relationships
     employee = db.relationship("Employee", back_populates="visas")
-    visa_type = db.relationship("VisaType", back_populates="visas")
+    
+    # visa_type = db.relationship("VisaType", back_populates="visas")
 
 
 
     def __repr__(self):
-        vt = self.visa_type.name if self.visa_type else "None"
-        return f"<Visa {self.id} emp={self.employee_id} type={vt} exp={self.expiration_date}>"
+        return f"<Visa {self.id} emp={self.employee_id} exp={self.expiration_date}>"
 
 class Test(db.Model):
     id = db.Column(db.Integer, primary_key=True)

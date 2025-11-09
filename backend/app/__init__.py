@@ -16,3 +16,6 @@ from backend.app import models
 @app.route("/")
 def home():
     return {"message": "Visa Management Backend running"}
+
+from backend.app.routes import api
+app.register_blueprint(api)
