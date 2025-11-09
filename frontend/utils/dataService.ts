@@ -3,7 +3,6 @@
 
 import { Dependent, PendingVisaApplication } from './employeeData';
 import { calculateVisaStatus, calculateDaysRemaining } from './visaStatusUtils';
-import { employeesData } from './EmployeesData';
 
 export interface SalaryRecord {
   effectiveDate: string;
@@ -20,7 +19,7 @@ export interface PermanentResidencyInfo {
 
 export interface Employee {
   id: number;
-  employeeName: string;
+  employeeName?: string;
   // Personal Information
   firstName?: string;
   lastName?: string;
@@ -101,15 +100,21 @@ function calculateDaysLeft(expirationDate: string): number {
 
 // Convert Employee to VisaCase format
 function employeeToVisaCase(employee: Employee): VisaCase {
+  // Safely build full name from either `employeeName` or first/last name
+  const fullName =
+    employee.employeeName ||
+    `${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim() ||
+    "Unnamed Employee";
+
   const hasPendingApplication = !!employee.pendingVisaApplication;
   const daysLeft = calculateDaysRemaining(employee.expirationDate);
   const computedStatus = calculateVisaStatus(employee.expirationDate, hasPendingApplication);
-  
+
   return {
     id: employee.id.toString(),
     employee: {
-      name: employee.employeeName,
-      department: employee.department,
+      name: fullName,
+      department: employee.department || "Unknown Department",
       email: employee.email,
       phone: employee.phone,
     },
@@ -117,12 +122,13 @@ function employeeToVisaCase(employee: Employee): VisaCase {
     status: computedStatus, // Use computed status instead of stored status
     expirationDate: employee.expirationDate,
     visaStartDate: employee.visaStartDate || employee.startDate,
-    daysLeft: daysLeft,
+    daysLeft,
     visaFiledBy: employee.visaFiledBy,
-    hasPendingApplication: hasPendingApplication,
+    hasPendingApplication,
     pendingTargetVisaType: employee.pendingVisaApplication?.targetVisaType,
   };
 }
+
 
 // ========================================
 // DATA FETCHING FUNCTIONS
@@ -176,19 +182,20 @@ export async function fetchEmployees(): Promise<Employee[]> {
  * TODO: Replace with API call to: GET /api/employees/:id
  */
 
-export async function fetchEmployeeById(id: string): Promise<Employee | null> {
-  try {
-    const response = await fetch(`http://127.0.0.1:5000/api/employees/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log("✅ Loaded employee from Flask:", data);
-    return data;
-  } catch (error) {
-    console.error("❌ Error fetching employee:", error);
-    return null;
+export async function fetchEmployeeById(id: number | string): Promise<Employee> {
+  const response = await fetch(`http://127.0.0.1:5000/api/employees/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch employee: ${response.statusText}`);
   }
+
+  const data = await response.json();
+  return data;
 }
 
 

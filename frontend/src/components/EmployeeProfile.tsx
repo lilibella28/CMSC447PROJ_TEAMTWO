@@ -181,7 +181,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
     </TooltipProvider>
   );
 
-  // Mock additional employee data
+  // // Mock additional employee data
   const employeeDetails = {
     email: fullEmployeeData?.email || `${employee.employee.name.toLowerCase().replace(/\s+/g, ".")}@umbc.edu`,
     employeeId: `EMP-${employee.id.padStart(5, "0")}`,
