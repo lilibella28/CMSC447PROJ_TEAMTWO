@@ -54,7 +54,6 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopN
         {/* Right side - Search, Notifications, Profile */}
         <div className="flex items-center space-x-2 md:space-x-4">
           <div className="relative hidden lg:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-gray-500 h-4 w-4" />
             <Input 
               placeholder="Search..." 
               className="pl-10 w-64 bg-input-background border-neutral-gray-200"
