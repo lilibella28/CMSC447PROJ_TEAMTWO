@@ -428,10 +428,10 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     <p className="text-black mt-1">{fullEmployeeData.nationality}</p>
                   </div>
                 )}
-                {fullEmployeeData?.citizenships && fullEmployeeData.citizenships.length > 0 && (
+                {fullEmployeeData?.citizenship && fullEmployeeData.citizenship.length > 0 && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Citizenship(s)</label>
-                    <p className="text-black mt-1">{fullEmployeeData.citizenships.join(", ")}</p>
+                    <p className="text-black mt-1">{fullEmployeeData.citizenship.join(", ")}</p>
                   </div>
                 )}
                 {fullEmployeeData?.dateOfBirth && (

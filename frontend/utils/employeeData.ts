@@ -42,7 +42,7 @@ export interface EmployeeData {
   personalEmail?: string;
   gender?: "Male" | "Female" | "Non-binary" | "Prefer not to say" | string;
   countryOfBirth?: string;
-  citizenships?: string[];
+  citizenship?: string[];
   // Contact & Identity
   email: string;
   phone: string;

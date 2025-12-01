@@ -71,7 +71,7 @@ export default function App() {
     
     // Show success toast notification
     toast.success("Employee added successfully!", {
-      description: `${employeeData.firstName} ${employeeData.lastName} has been added to the system.`,
+      description: `${employeeData.first_name} ${employeeData.last_name} has been added to the system.`,
       duration: 4000,
     });
   };

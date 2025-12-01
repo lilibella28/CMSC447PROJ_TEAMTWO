@@ -1,20 +1,19 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    # Secret key for sessions, CSRF protection, etc.
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key")
+
+    # --- Database Configuration ---
+    # Example: PostgreSQL
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URL",
+        "postgresql://postgres:password@localhost:5432/visatracking"
+    )
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME", "visa_db")
-
-    SQLALCHEMY_DATABASE_URI = (
-        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-        if DB_USER
-        else os.getenv("DATABASE_URL")
-    )
+    # --- Upload Folder for Excel Imports ---
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))          # backend/app
+    PROJECT_ROOT = os.path.dirname(BASE_DIR)                       # backend
+    UPLOAD_FOLDER = os.path.join(PROJECT_ROOT, "uploads")          # backend/uploads

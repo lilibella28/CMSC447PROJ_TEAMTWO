@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime, date
 from decimal import Decimal, InvalidOperation
 
-from backend.app import app, db              
+from backend.app import db              
 from backend.app.models import Employee, Visa
 
 
@@ -57,10 +57,10 @@ def get_or_create_visa_type(name: str, default_alert=6):
     return vt
 """
 
-def find_employee_by_email_or_name(umbc_email, first_name, last_name):
+def find_employee_by_email_or_name(email, first_name, last_name):
 
-    if umbc_email:
-        e = Employee.query.filter(Employee.umbc_email.ilike(umbc_email.strip())).first()
+    if email:
+        e = Employee.query.filter(Employee.email.ilike(email.strip())).first()
         if e:
             return e
 
@@ -93,7 +93,7 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
     for i, row in df.iterrows():
         first_name = (row.get(col("First Name")) or "").strip()
         last_name  = (row.get(col("Last name")) or "").strip()
-        umbc_email = (row.get(col("Employee's UMBC email")) or "").strip()
+        email = (row.get(col("Employee's UMBC email")) or "").strip()
         personal   = (row.get(col("Personal email")) or "").strip()
         country    = (row.get(col("Country of Birth")) or "").strip()
         citizenship= (row.get(col("All Citizenships")) or "").strip()
@@ -107,7 +107,7 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
 
         initial_h1b_start = to_date(row.get(col("initial H-1B start")))
 
-        emp = find_employee_by_email_or_name(umbc_email, first_name, last_name)
+        emp = find_employee_by_email_or_name(email, first_name, last_name)
         if emp:
             changed = False
             for attr, value in [
@@ -116,7 +116,7 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
                 ("citizenship", citizenship or emp.citizenship),
                 ("gender", gender or emp.gender),
                 ("dependents", dependents if dependents is not None else emp.dependents),
-                ("initial_h1b_start_date", initial_h1b_start or emp.initial_h1b_start_date),
+                ("initial_h1b_start", initial_h1b_start or emp.initial_h1b_start),
             ]:
                 setattr(emp, attr, value)
                 changed = True
@@ -126,13 +126,13 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
             emp = Employee(
                 first_name=first_name,
                 last_name=last_name,
-                umbc_email=umbc_email or None,
+                email=email or None,
                 personal_email=personal or None,
                 country_of_birth=country or None,
                 citizenship=citizenship or None,
                 gender=gender or None,
                 dependents=dependents,
-                initial_h1b_start_date=initial_h1b_start,
+                initial_h1b_start=initial_h1b_start,
             )
             db.session.add(emp)
             db.session.flush() 

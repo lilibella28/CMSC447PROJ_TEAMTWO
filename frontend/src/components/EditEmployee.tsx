@@ -46,13 +46,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
   const [formData, setFormData] = useState({
     // Personal Information
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "", // UMBC Email
     personalEmail: "",
     gender: "",
     countryOfBirth: "",
-    citizenships: "",
+    citizenship: "",
     phone: "",
     address: "",
     nationality: "",
@@ -116,13 +116,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
         // Populate form with existing data
         setFormData({
-          firstName: data.firstName || "",
-          lastName: data.lastName || "",
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
           email: data.email || "",
           personalEmail: data.personalEmail || "",
           gender: data.gender || "",
           countryOfBirth: data.countryOfBirth || "",
-          citizenships: data.citizenships?.join(", ") || "",
+          citizenship: data.citizenship?.join(", ") || "",
           phone: data.phone || "",
           address: data.address || "",
           nationality: data.nationality || "",
@@ -194,10 +194,10 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
     const newErrors: Record<string, string> = {};
 
     // Required fields
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "First name is required";
     }
-    if (!formData.lastName.trim()) {
+    if (!formData.last_name.trim()) {
       newErrors.lastName = "Last name is required";
     }
     if (!formData.email.trim()) {
@@ -227,14 +227,14 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
         setIsSaving(true);
         
         const updatedData: Partial<Employee> = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          employeeName: `${formData.firstName} ${formData.lastName}`,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          employeeName: `${formData.first_name} ${formData.last_name}`,
           email: formData.email,
           personalEmail: formData.personalEmail || undefined,
           gender: formData.gender || undefined,
           countryOfBirth: formData.countryOfBirth || undefined,
-          citizenships: formData.citizenships ? formData.citizenships.split(",").map(c => c.trim()) : [],
+          citizenship: formData.citizenship ? formData.citizenship.split(",").map(c => c.trim()) : [],
           phone: formData.phone,
           address: formData.address,
           nationality: formData.nationality,
@@ -351,18 +351,18 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* First Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-[#1E1E1E]">
+                        <Label htmlFor="first_name" className="text-[#1E1E1E]">
                           First Name <span className="text-[#DC2626]">*</span>
                         </Label>
                         <Input
-                          id="firstName"
-                          value={formData.firstName}
-                          onChange={(e) => handleInputChange("firstName", e.target.value)}
-                          className={`border-[#E5E5E5] ${errors.firstName ? "border-[#DC2626]" : ""}`}
+                          id="first_name"
+                          value={formData.first_name}
+                          onChange={(e) => handleInputChange("first_name", e.target.value)}
+                          className={`border-[#E5E5E5] ${errors.first_name ? "border-[#DC2626]" : ""}`}
                           placeholder="Enter first name"
                         />
-                        {errors.firstName && (
-                          <p className="text-sm text-[#DC2626]">{errors.firstName}</p>
+                        {errors.first_name && (
+                          <p className="text-sm text-[#DC2626]">{errors.first_name}</p>
                         )}
                       </div>
 
@@ -373,7 +373,7 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                         </Label>
                         <Input
                           id="lastName"
-                          value={formData.lastName}
+                          value={formData.last_name}
                           onChange={(e) => handleInputChange("lastName", e.target.value)}
                           className={`border-[#E5E5E5] ${errors.lastName ? "border-[#DC2626]" : ""}`}
                           placeholder="Enter last name"
@@ -492,7 +492,7 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                         </Label>
                         <Input
                           id="citizenships"
-                          value={formData.citizenships}
+                          value={formData.citizenship}
                           onChange={(e) => handleInputChange("citizenships", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="e.g., India, Canada (comma separated)"

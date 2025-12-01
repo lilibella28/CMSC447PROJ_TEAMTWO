@@ -10,13 +10,13 @@ def create_employee():
     data = request.json
     try:
         employee = Employee(
-            firstName=data.get("firstName"),
-            lastName=data.get("lastName"),
+            first_name=data.get("first_name"),
+            last_name=data.get("last_name"),
             email=data.get("email"),
             personalEmail=data.get("personalEmail"),
             gender=data.get("gender"),
             countryOfBirth=data.get("countryOfBirth"),
-            citizenships=data.get("citizenships"),
+            citizenship=data.get("citizenships"),
             department=data.get("department"),
             employeeTitle=data.get("employeeTitle"),
             departmentAdmin=data.get("departmentAdmin"),

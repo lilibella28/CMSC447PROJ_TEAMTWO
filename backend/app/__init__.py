@@ -2,29 +2,37 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
-from .config import Config
+# Assuming config is in the same directory, this is correct:
+from .config import Config 
 
+# Define extensions globally without initializing
 db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    CORS(app)
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}},
+        supports_credentials=True
+    )
 
-    # initialize extensions
+    # Initialize extensions with the app instance
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # import models so migrations detect them
-    from backend.app import models
+    # Import models so migrations detect them (USE RELATIVE IMPORT)
+    from . import models
 
-    # register blueprints
-    from backend.app.routes.employees import employee_bp
+    # Register blueprints (USE RELATIVE IMPORTS)
+    # Note: This assumes you have created the __init__.py file inside the 'routes' directory.
+    from .routes.employees import employee_bp
     app.register_blueprint(employee_bp, url_prefix="/api/employees")
 
-    @app.route("/")
-    def home():
-        return {"message": "Visa Management Backend running"}
+    from .routes.import_routes import import_bp
+    app.register_blueprint(import_bp, url_prefix="/api/excel")
+
+    app.config.from_object(Config)
 
     return app

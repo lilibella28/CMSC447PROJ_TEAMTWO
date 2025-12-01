@@ -38,13 +38,13 @@ interface AddEmployeeProps {
 export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
   const [formData, setFormData] = useState({
     // Personal Information
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "", // UMBC Email
     personalEmail: "",
     gender: "",
     countryOfBirth: "",
-    citizenships: "",
+    citizenship: "",
     // Employment Information
     department: "",
     employeeTitle: "",
@@ -116,11 +116,11 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
     const newErrors: Record<string, string> = {};
 
     // Required fields
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "First name is required";
     }
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = "Last name is required";
     }
     if (!formData.email.trim()) {
       newErrors.email = "UMBC email is required";
@@ -171,7 +171,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
     if (validateForm()) {
       const employeeData = {
         ...formData,
-        citizenships: formData.citizenships ? formData.citizenships.split(",").map(c => c.trim()) : [],
+        citizenship: formData.citizenship ? formData.citizenship.split(",").map(c => c.trim()) : [],
         annualSalary: formData.annualSalary ? parseFloat(formData.annualSalary) : undefined,
         numberOfDependents: parseInt(formData.numberOfDependents) || 0,
         expirationDate: dates.expirationDate ? format(dates.expirationDate, "yyyy-MM-dd") : null,
@@ -270,41 +270,41 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {/* First Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-black">
+                  <Label htmlFor="first_name" className="text-black">
                     First Name <span className="text-[#EF4444]">*</span>
                   </Label>
                   <Input
-                    id="firstName"
+                    id="first_name"
                     type="text"
                     placeholder="Enter first name"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                    value={formData.first_name}
+                    onChange={(e) => handleInputChange("first_name", e.target.value)}
                     className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                      errors.firstName ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                      errors.first_name ? "border-[#EF4444]" : "border-[#E5E7EB]"
                     }`}
                   />
-                  {errors.firstName && (
-                    <p className="text-sm text-[#EF4444]">{errors.firstName}</p>
+                  {errors.first_name && (
+                    <p className="text-sm text-[#EF4444]">{errors.first_name}</p>
                   )}
                 </div>
 
                 {/* Last Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-black">
+                  <Label htmlFor="last_name" className="text-black">
                     Last Name <span className="text-[#EF4444]">*</span>
                   </Label>
                   <Input
-                    id="lastName"
+                    id="last_name"
                     type="text"
                     placeholder="Enter last name"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    value={formData.last_name}
+                    onChange={(e) => handleInputChange("last_name", e.target.value)}
                     className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                      errors.lastName ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                      errors.last_name ? "border-[#EF4444]" : "border-[#E5E7EB]"
                     }`}
                   />
-                  {errors.lastName && (
-                    <p className="text-sm text-[#EF4444]">{errors.lastName}</p>
+                  {errors.last_name && (
+                    <p className="text-sm text-[#EF4444]">{errors.last_name}</p>
                   )}
                 </div>
 
@@ -379,7 +379,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                   />
                 </div>
 
-                {/* Citizenships */}
+                {/* citizenship */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Label htmlFor="citizenships" className="text-black">
@@ -391,7 +391,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                     id="citizenships"
                     type="text"
                     placeholder="e.g., India, United States"
-                    value={formData.citizenships}
+                    value={formData.citizenship}
                     onChange={(e) => handleInputChange("citizenships", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />

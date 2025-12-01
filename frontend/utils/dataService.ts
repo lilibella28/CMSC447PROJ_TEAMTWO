@@ -21,12 +21,12 @@ export interface Employee {
   id: number;
   employeeName?: string;
   // Personal Information
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   personalEmail?: string;
   gender?: "Male" | "Female" | "Non-binary" | "Prefer not to say" | string;
   countryOfBirth?: string;
-  citizenships?: string[]; // Array of countries
+  citizenship?: string[]; // Array of countries
   // Contact & Identity
   email: string; // UMBC Email
   phone: string;
@@ -103,7 +103,7 @@ function employeeToVisaCase(employee: Employee): VisaCase {
   // Safely build full name from either `employeeName` or first/last name
   const fullName =
     employee.employeeName ||
-    `${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim() ||
+    `${employee.first_name ?? ""} ${employee.last_name ?? ""}`.trim() ||
     "Unnamed Employee";
 
   const hasPendingApplication = !!employee.pendingVisaApplication;
