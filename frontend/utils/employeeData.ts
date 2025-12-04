@@ -19,12 +19,12 @@ export interface Dependent {
 }
 
 export interface PendingVisaApplication {
-  targetVisaType: string;
+  targetvisa_type: string;
   applicationDate: string;
   status: "Pending" | "Under Review" | "Awaiting Decision" | "Approved" | "Denied";
   expectedDecisionDate?: string;
   notes?: string;
-  filedBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
+  filed_by: "Attorney" | "UMBC Administrator" | "Self-Petition";
 }
 
 export interface PermanentResidencyInfo {
@@ -39,9 +39,9 @@ export interface EmployeeData {
   // Personal Information
   firstName?: string;
   lastName?: string;
-  personalEmail?: string;
+  personal_email?: string;
   gender?: "Male" | "Female" | "Non-binary" | "Prefer not to say" | string;
-  countryOfBirth?: string;
+  country_of_birth?: string;
   citizenship?: string[];
   // Contact & Identity
   email: string;
@@ -52,37 +52,37 @@ export interface EmployeeData {
   passportNumber: string;
   // Employment Information
   department: string;
-  employeeTitle?: string;
-  departmentAdmin?: string;
-  departmentAdvisor?: string;
-  annualSalary?: number;
-  startDate: string;
+  employee_title?: string;
+  department_admin?: string;
+  department_advisor?: string;
+ annual_salary?: number;
+  start_date: string;
   salaryHistory: SalaryRecord[];
   // Visa & Immigration
-  visaType: string;
+  visa_type: string;
   status: "Active" | "Pending" | "Expired" | "Processing" | "Expiring Soon";
-  visaStartDate?: string;
-  expirationDate: string;
+  visa_start_date?: string;
+  expiration_date: string;
   visaFiledBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
-  caseType?: string;
-  initialH1BStartDate?: string;
-  prepExtensionDate?: string;
-  maxHPeriod?: string;
-  i94Number: string;
-  i94ExpiryDate?: string;
-  sevisId: string;
+  case_type?: string;
+  initial_h1b_start_date?: string;
+  prep_extension_date ?: string;
+  max_h_period?: string;
+ i94_number: string;
+  i94_expiry_date?: string;
+  sevis_id: string;
   permanentResidency?: PermanentResidencyInfo;
-  // Dependents
-  dependents: number;
-  dependentsDetails: Dependent[];
+  // number_of_dependents
+  number_of_dependents: number;
+  number_of_dependentsDetails: Dependent[];
   pendingVisaApplication?: PendingVisaApplication;
   // Education
-  highestEducation?: "High School" | "Associate" | "Bachelor's" | "Master's" | "Doctorate" | "Other" | "B.A." | "M.S." | "Ph.D.";
-  fieldOfStudy?: string;
+  highest_education?: "High School" | "Associate" | "Bachelor's" | "Master's" | "Doctorate" | "Other" | "B.A." | "M.S." | "Ph.D.";
+  field_of_study?: string;
   // Administrative
-  socCode?: string;
-  socCodeDescription?: string;
-  generalNotes?: string;
+  soc_code?: string;
+  soc_code_description?: string;
+  general_notes?: string;
 }
 
 // NOTE: Employee data is now stored in /public/data/employees.json

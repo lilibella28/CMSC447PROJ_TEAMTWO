@@ -304,7 +304,7 @@ export function DataConnectionTest() {
                       <td className="py-2 px-3 text-[#4A4A4A]">{emp.id}</td>
                       <td className="py-2 px-3 text-[#1E1E1E]">{emp.employeeName}</td>
                       <td className="py-2 px-3 text-[#4A4A4A]">{emp.department}</td>
-                      <td className="py-2 px-3 text-[#4A4A4A]">{emp.visaType}</td>
+                      <td className="py-2 px-3 text-[#4A4A4A]">{emp.visa_type}</td>
                       <td className="py-2 px-3">
                         <Badge className="bg-[#5BB974] text-white text-xs">
                           {emp.status}

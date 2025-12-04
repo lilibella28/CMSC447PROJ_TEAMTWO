@@ -104,7 +104,7 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
                   <div className="text-sm text-neutral-gray-500 hidden sm:block">{row.employee.department}</div>
                 </div>
               </TableCell>
-              <TableCell className="text-black min-w-[120px]">{row.visaType}</TableCell>
+              <TableCell className="text-black min-w-[120px]">{row.visa_type}</TableCell>
               <TableCell className="min-w-[100px]">
                 <div className="flex items-center gap-2">
                   <Badge 
@@ -131,7 +131,7 @@ export function DataTable({ data, onViewEmployee }: DataTableProps) {
               <TableCell className="min-w-[180px]">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <span className={`inline-flex items-center px-2 py-1 rounded text-sm border ${getDateChipStyle(row.daysLeft)}`}>
-                    {formatDate(row.expirationDate)}
+                    {formatDate(row.expiration_date)}
                   </span>
                   {row.daysLeft <= 180 && row.daysLeft > 0 && (
                     <Badge className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90 border-[#FFCC00]">

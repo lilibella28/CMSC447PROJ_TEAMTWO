@@ -23,9 +23,9 @@ export interface Employee {
   // Personal Information
   first_name?: string;
   last_name?: string;
-  personalEmail?: string;
+  personal_email?: string;
   gender?: "Male" | "Female" | "Non-binary" | "Prefer not to say" | string;
-  countryOfBirth?: string;
+  country_of_birth?: string;
   citizenship?: string[]; // Array of countries
   // Contact & Identity
   email: string; // UMBC Email
@@ -36,37 +36,37 @@ export interface Employee {
   passportNumber: string;
   // Employment Information
   department: string;
-  employeeTitle?: string; // Position/Job Title
-  departmentAdmin?: string;
-  departmentAdvisor?: string; // PI / Chair
-  annualSalary?: number;
-  startDate: string;
-  salaryHistory: SalaryRecord[];
+  employee_title?: string; // Position/Job Title
+  department_admin?: string;
+  department_advisor?: string; // PI / Chair
+  annual_salary?: number;
+  start_date: string;
+  salary_history: SalaryRecord[];
   // Visa & Immigration
-  visaType: string;
+  visa_type: string;
   status: "Active" | "Pending" | "Expired" | "Processing" | "Expiring Soon";
-  visaStartDate: string;
-  expirationDate: string;
+  visa_start_date: string;
+  expiration_date: string;
   visaFiledBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
-  caseType?: string; // e.g., "H-1B Extension", "Initial COS", "Change of Status"
-  initialH1BStartDate?: string;
-  prepExtensionDate?: string; // Reminder field for when to prep extension
-  maxHPeriod?: string; // Max H-1B period end date
-  i94Number: string;
-  i94ExpiryDate?: string;
-  sevisId: string;
+  case_type?: string; // e.g., "H-1B Extension", "Initial COS", "Change of Status"
+  initial_h1b_start_date?: string;
+  prep_extension_date ?: string; // Reminder field for when to prep extension
+  max_h_period?: string; // Max H-1B period end date
+ i94_number: string;
+  i94_expiry_date?: string;
+  sevis_id: string;
   permanentResidency?: PermanentResidencyInfo;
-  // Dependents
-  dependents: number;
-  dependentsDetails: Dependent[];
+  // number_of_dependents
+  number_of_dependents: number;
+  number_of_dependentsDetails: Dependent[];
   pendingVisaApplication?: PendingVisaApplication;
   // Education
-  highestEducation?: "High School" | "Associate" | "Bachelor's" | "Master's" | "Doctorate" | "Other";
-  fieldOfStudy?: string;
+  highest_education?: "High School" | "Associate" | "Bachelor's" | "Master's" | "Doctorate" | "Other";
+  field_of_study?: string;
   // Administrative
-  socCode?: string;
-  socCodeDescription?: string;
-  generalNotes?: string;
+  soc_code?: string;
+  soc_code_description?: string;
+  general_notes?: string;
 }
 
 export type { Dependent, PendingVisaApplication };
@@ -79,20 +79,20 @@ export interface VisaCase {
     email?: string;
     phone?: string;
   };
-  visaType: string;
+  visa_type: string;
   status: "Active" | "Pending" | "Expired" | "Processing" | "Expiring Soon";
-  expirationDate: string;
-  visaStartDate: string;
+  expiration_date: string;
+  visa_start_date: string;
   daysLeft: number;
   visaFiledBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
   hasPendingApplication?: boolean;
-  pendingTargetVisaType?: string;
+  pendingTargetvisa_type?: string;
 }
 
 // Calculate days left until expiration
-function calculateDaysLeft(expirationDate: string): number {
+function calculateDaysLeft(expiration_date: string): number {
   const today = new Date();
-  const expDate = new Date(expirationDate);
+  const expDate = new Date(expiration_date);
   const diffTime = expDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
@@ -107,8 +107,8 @@ function employeeToVisaCase(employee: Employee): VisaCase {
     "Unnamed Employee";
 
   const hasPendingApplication = !!employee.pendingVisaApplication;
-  const daysLeft = calculateDaysRemaining(employee.expirationDate);
-  const computedStatus = calculateVisaStatus(employee.expirationDate, hasPendingApplication);
+  const daysLeft = calculateDaysRemaining(employee.expiration_date);
+  const computedStatus = calculateVisaStatus(employee.expiration_date, hasPendingApplication);
 
   return {
     id: employee.id.toString(),
@@ -118,14 +118,14 @@ function employeeToVisaCase(employee: Employee): VisaCase {
       email: employee.email,
       phone: employee.phone,
     },
-    visaType: employee.visaType,
+    visa_type: employee.visa_type,
     status: computedStatus, // Use computed status instead of stored status
-    expirationDate: employee.expirationDate,
-    visaStartDate: employee.visaStartDate || employee.startDate,
+    expiration_date: employee.expiration_date,
+    visa_start_date: employee.visa_start_date || employee.start_date,
     daysLeft,
     visaFiledBy: employee.visaFiledBy,
     hasPendingApplication,
-    pendingTargetVisaType: employee.pendingVisaApplication?.targetVisaType,
+    pendingTargetvisa_type: employee.pendingVisaApplication?.targetvisa_type,
   };
 }
 
@@ -301,5 +301,135 @@ export async function fetchStatistics() {
   } catch (error) {
     console.error('Error fetching statistics:', error);
     throw error;
+  }
+}
+
+
+// ========================================
+// VISA HISTORY API FUNCTIONS
+// ========================================
+
+export interface VisaHistoryRecord {
+  id: number;
+  employee_id: number;
+  visa_type: string;
+  status: string;
+  start_date: string;
+  expiration_date: string;
+  comments?: string;
+  added_at: string;
+  added_by: string;
+  is_current: boolean;
+}
+
+/**
+ * Fetch all visa history records for an employee
+ * GET /api/employees/:id/visa-history
+ */
+export async function fetchVisaHistory(employeeId: number): Promise<VisaHistoryRecord[]> {
+  try {
+    const API_BASE = 'http://localhost:5000/api';
+    const response = await fetch(`${API_BASE}/employees/${employeeId}/visa-history`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch visa history: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      return data.visa_history || [];
+    } else {
+      throw new Error(data.error || 'Failed to fetch visa history');
+    }
+  } catch (error) {
+    console.error('Error fetching visa history:', error);
+    return []; // Return empty array on error
+  }
+}
+
+/**
+ * Add a new visa history record
+ * POST /api/employees/:id/visa-history
+ */
+export async function addVisaHistory(
+  employeeId: number,
+  visaData: {
+    visa_type: string;
+    status: string;
+    start_date: string;
+    expiration_date: string;
+    comments?: string;
+    added_by: string;
+    is_current?: boolean;
+  }
+): Promise<{ success: boolean; visa_history?: VisaHistoryRecord; error?: string }> {
+  try {
+    const API_BASE = 'http://localhost:5000/api';
+    const response = await fetch(`${API_BASE}/employees/${employeeId}/visa-history`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(visaData),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.error || 'Failed to add visa history',
+      };
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error adding visa history:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Update an existing visa history record
+ * PUT /api/visa-history/:id
+ */
+export async function updateVisaHistory(
+  historyId: number,
+  updates: {
+    status?: string;
+    expiration_date?: string;
+    comments?: string;
+  }
+): Promise<{ success: boolean; visa_history?: VisaHistoryRecord; error?: string }> {
+  try {
+    const API_BASE = 'http://localhost:5000/api';
+    const response = await fetch(`${API_BASE}/visa-history/${historyId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.error || 'Failed to update visa history',
+      };
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error updating visa history:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }

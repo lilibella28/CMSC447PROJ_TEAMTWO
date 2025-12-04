@@ -38,7 +38,7 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [visaTypeFilter, setVisaTypeFilter] = useState("all");
+  const [visa_typeFilter, setvisa_typeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [employees, setEmployees] = useState<VisaCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,16 +143,16 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
       employee.employee.department === departmentFilter;
 
     // Visa type filter
-    const matchesVisaType =
-      visaTypeFilter === "all" ||
-      employee.visaType === visaTypeFilter;
+    const matchesvisa_type =
+      visa_typeFilter === "all" ||
+      employee.visa_type === visa_typeFilter;
 
     // Status filter
     const matchesStatus =
       statusFilter === "all" ||
       employee.status === statusFilter;
 
-    return matchesSearch && matchesDepartment && matchesVisaType && matchesStatus;
+    return matchesSearch && matchesDepartment && matchesvisa_type && matchesStatus;
   });
 
   // Get status priority for sorting (lower number = higher priority)
@@ -197,15 +197,15 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, departmentFilter, visaTypeFilter, statusFilter]);
+  }, [searchQuery, departmentFilter, visa_typeFilter, statusFilter]);
 
   // Get unique values for filter dropdowns
   const allDepartments = Array.isArray(employees) ? Array.from(
     new Set(employees.map((emp) => emp.employee.department))
   ).sort() : [];
 
-  const allVisaTypes = Array.isArray(employees) ? Array.from(
-    new Set(employees.map((emp) => emp.visaType))
+  const allvisa_types = Array.isArray(employees) ? Array.from(
+    new Set(employees.map((emp) => emp.visa_type))
   ).sort() : [];
 
   // Get initials for avatar
@@ -276,13 +276,13 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
               </Select>
 
               {/* Visa Type Filter */}
-              <Select value={visaTypeFilter} onValueChange={setVisaTypeFilter}>
+              <Select value={visa_typeFilter} onValueChange={setvisa_typeFilter}>
                 <SelectTrigger className="w-full lg:w-[180px] h-10 bg-white border-[#E1E1E1] rounded-lg">
                   <SelectValue placeholder="Visa Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Visa Types</SelectItem>
-                  {allVisaTypes.map((type) => (
+                  {allvisa_types.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
@@ -332,7 +332,7 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
                   onClick={() => {
                     setSearchQuery("");
                     setDepartmentFilter("all");
-                    setVisaTypeFilter("all");
+                    setvisa_typeFilter("all");
                     setStatusFilter("all");
                   }}
                 >
@@ -386,7 +386,7 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
                           {employee.employee.department}
                         </TableCell>
                         <TableCell className="text-sm text-[#4A4A4A]">
-                          {employee.visaType}
+                          {employee.visa_type}
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeStyle(employee.status)}>
@@ -394,7 +394,7 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-[#4A4A4A]">
-                          {new Date(employee.expirationDate).toLocaleDateString('en-US', {
+                          {new Date(employee.expiration_date).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'

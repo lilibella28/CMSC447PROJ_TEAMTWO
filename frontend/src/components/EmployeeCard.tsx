@@ -62,11 +62,11 @@ export function EmployeeCard({ employee, onViewEmployee, onEmailEmployee }: Empl
       <div className="space-y-2 mb-4">
         <div className="flex items-center text-sm text-neutral-gray-600">
           <MapPin className="h-4 w-4 mr-2 text-neutral-gray-400" />
-          <span>Visa Type: {employee.visaType}</span>
+          <span>Visa Type: {employee.visa_type}</span>
         </div>
         <div className="flex items-center text-sm text-neutral-gray-600">
           <Calendar className="h-4 w-4 mr-2 text-neutral-gray-400" />
-          <span>Expires: {employee.expirationDate}</span>
+          <span>Expires: {employee.expiration_date}</span>
         </div>
         <div className="flex items-center text-sm">
           <span className="mr-2 text-neutral-gray-600">Days left:</span>

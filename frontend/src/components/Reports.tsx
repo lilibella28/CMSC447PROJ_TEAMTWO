@@ -47,6 +47,8 @@ import {
 } from "recharts";
 import { fetchEmployees, Employee } from "../../utils/dataService";
 import { calculateVisaStatus, calculateDaysRemaining } from "../../utils/visaStatusUtils";
+import { ReportingToolbar, ReportingMode } from "./ReportingToolBar.tsx";
+import { toast } from "sonner";
 
 // Visa Type color palette (neutral analytical scheme)
 const VISA_TYPE_COLORS: Record<string, string> = {
@@ -70,14 +72,19 @@ export function Reports() {
   const [reportPeriod, setReportPeriod] = useState("fiscal-year");
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string[]>([]);
-  const [visaTypeFilter, setVisaTypeFilter] = useState<string[]>([]);
+  const [visa_typeFilter, setvisa_typeFilter] = useState<string[]>([]);
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
-  const [prStatusFilter, setPrStatusFilter] = useState<string[]>([]);
+  const [pr_statusFilter, setpr_statusFilter] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [employeesData, setEmployeesData] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Date range filtering states
+  const [reportStartDate, setReportStartDate] = useState<string | null>(null);
+  const [reportEndDate, setReportEndDate] = useState<string | null>(null);
+  const [reportMode, setReportMode] = useState<ReportingMode | null>(null);
 
   // Load employee data
   useEffect(() => {
@@ -98,30 +105,41 @@ export function Reports() {
   const reportData = Array.isArray(employeesData) ? employeesData.map((emp) => {
     // Calculate computed status and days remaining
     const hasPendingApplication = !!emp.pendingVisaApplication;
-    const daysLeft = calculateDaysRemaining(emp.expirationDate);
-    const computedStatus = calculateVisaStatus(emp.expirationDate, hasPendingApplication);
+    const daysLeft = calculateDaysRemaining(emp.expiration_date);
+    const computedStatus = calculateVisaStatus(emp.expiration_date, hasPendingApplication);
 
     return {
       id: emp.id,
       name: emp.employeeName,
       department: emp.department,
-      title: emp.employeeTitle || "N/A",
-      caseType: emp.caseType || "N/A",
-      filedBy: emp.visaFiledBy,
-      startDate: emp.visaStartDate || emp.startDate,
-      expirationDate: emp.expirationDate,
-      dependents: emp.dependents,
-      prStatus: emp.permanentResidency?.currentStatus || "Not Started",
-      country: emp.countryOfBirth || emp.nationality,
-      visaType: emp.visaType,
+      title: emp.employee_title || "N/A",
+      case_type: emp.case_type || "N/A",
+      filed_by: emp.visaFiledBy,
+      start_date: emp.visa_start_date || emp.start_date,
+      expiration_date: emp.expiration_date,
+      number_of_dependents: emp.number_of_dependents,
+      pr_status: emp.permanentResidency?.currentStatus || "Not Started",
+      country: emp.country_of_birth || emp.nationality,
+      visa_type: emp.visa_type,
       status: computedStatus, // Use computed status instead of stored status
       daysLeft,
-      notes: emp.generalNotes || "",
+      notes: emp.general_notes || "",
     };
   }) : [];
 
-  // Filter data
-  const filteredData = reportData.filter((item) => {
+  // Apply date range filter first (from report generation)
+  const dateRangeFilteredData = reportData.filter((item) => {
+    if (!reportStartDate || !reportEndDate) return true;
+    
+    const expDate = new Date(item.expiration_date);
+    const start_date = new Date(reportStartDate);
+    const endDate = new Date(reportEndDate);
+    
+    return expDate >= start_date && expDate <= endDate;
+  });
+
+  // Filter data (apply additional filters on top of date range filter)
+  const filteredData = dateRangeFilteredData.filter((item) => {
     const matchesSearch =
       searchQuery === "" ||
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -130,16 +148,16 @@ export function Reports() {
     const matchesDepartment =
       departmentFilter.length === 0 || departmentFilter.includes(item.department);
     
-    const matchesVisaType =
-      visaTypeFilter.length === 0 || visaTypeFilter.includes(item.visaType);
+    const matchesvisa_type =
+      visa_typeFilter.length === 0 || visa_typeFilter.includes(item.visa_type);
     
     const matchesCountry =
       countryFilter.length === 0 || countryFilter.includes(item.country);
     
-    const matchesPrStatus =
-      prStatusFilter.length === 0 || prStatusFilter.includes(item.prStatus);
+    const matchespr_status =
+      pr_statusFilter.length === 0 || pr_statusFilter.includes(item.pr_status);
 
-    return matchesSearch && matchesDepartment && matchesVisaType && matchesCountry && matchesPrStatus;
+    return matchesSearch && matchesDepartment && matchesvisa_type && matchesCountry && matchespr_status;
   });
 
   // Sort data
@@ -165,90 +183,118 @@ export function Reports() {
   };
 
   // Calculate KPIs
-  const totalEmployees = reportData.length;
-  const activeH1B = reportData.filter((d) => d.visaType === "H-1B" && d.status === "Active").length;
-  const pendingPR = reportData.filter((d) => 
-    d.prStatus === "Filed" || d.prStatus === "Awaiting Response"
+  const totalEmployees = filteredData.length;
+  const activeH1B = filteredData.filter((d) => d.visa_type === "H-1B" && d.status === "Active").length;
+  const pendingPR = filteredData.filter((d) => 
+    d.pr_status === "Filed" || d.pr_status === "Awaiting Response"
   ).length;
-  const expiringNext90 = reportData.filter((d) => d.daysLeft > 0 && d.daysLeft <= 90).length;
+  const expiringNext90 = filteredData.filter((d) => d.daysLeft > 0 && d.daysLeft <= 90).length;
 
-  // Chart data - Case Type distribution
-  const caseTypeData = Object.entries(
-    reportData.reduce((acc, item) => {
-      const caseType = item.caseType || "Other";
-      acc[caseType] = (acc[caseType] || 0) + 1;
+  // Chart data - Case Type distribution (use date range filtered data)
+  const case_typeData = Object.entries(
+    dateRangeFilteredData.reduce((acc, item) => {
+      const case_type = item.case_type || "Other";
+      acc[case_type] = (acc[case_type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value }));
 
-  // Filed By distribution
+  // Filed By distribution (use date range filtered data)
   const filedByData = Object.entries(
-    reportData.reduce((acc, item) => {
-      acc[item.filedBy] = (acc[item.filedBy] || 0) + 1;
+    dateRangeFilteredData.reduce((acc, item) => {
+      acc[item.filed_by] = (acc[item.filed_by] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value }));
 
-  // Expiration timeline (next 12 months)
-  const expirationTimeline = Array.from({ length: 12 }, (_, i) => {
-    const targetDate = new Date();
-    targetDate.setMonth(targetDate.getMonth() + i);
-    const monthName = targetDate.toLocaleString("en-US", { month: "short" });
-    const year = targetDate.getFullYear();
-    
-    const count = reportData.filter((emp) => {
-      const expDate = new Date(emp.expirationDate);
-      return (
-        expDate.getMonth() === targetDate.getMonth() &&
-        expDate.getFullYear() === targetDate.getFullYear()
-      );
-    }).length;
-    
-    return { month: `${monthName} ${year}`, count };
-  });
+  // Expiration timeline - show based on report date range if selected, otherwise next 12 months
+  const expirationTimeline = (() => {
+    if (reportStartDate && reportEndDate) {
+      // When a report is generated, show distribution across the selected date range
+      const start = new Date(reportStartDate);
+      const end = new Date(reportEndDate);
+      const monthsDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
+      const numMonths = Math.min(Math.max(monthsDiff, 1), 12); // Show at least 1 month, max 12
+
+      return Array.from({ length: numMonths }, (_, i) => {
+        const targetDate = new Date(start);
+        targetDate.setMonth(targetDate.getMonth() + i);
+        const monthName = targetDate.toLocaleString("en-US", { month: "short" });
+        const year = targetDate.getFullYear();
+        
+        const count = dateRangeFilteredData.filter((emp) => {
+          const expDate = new Date(emp.expiration_date);
+          return (
+            expDate.getMonth() === targetDate.getMonth() &&
+            expDate.getFullYear() === targetDate.getFullYear()
+          );
+        }).length;
+        
+        return { month: `${monthName} ${year}`, count };
+      });
+    } else {
+      // Default: show next 12 months
+      return Array.from({ length: 12 }, (_, i) => {
+        const targetDate = new Date();
+        targetDate.setMonth(targetDate.getMonth() + i);
+        const monthName = targetDate.toLocaleString("en-US", { month: "short" });
+        const year = targetDate.getFullYear();
+        
+        const count = reportData.filter((emp) => {
+          const expDate = new Date(emp.expiration_date);
+          return (
+            expDate.getMonth() === targetDate.getMonth() &&
+            expDate.getFullYear() === targetDate.getFullYear()
+          );
+        }).length;
+        
+        return { month: `${monthName} ${year}`, count };
+      });
+    }
+  })();
 
   // Employee Distribution Overview data
   // 1. Visa Type Breakdown (categorize F-1, OPT, OPT STEM as F1 group)
-  const visaTypeDistribution = Array.isArray(employeesData) ? employeesData.reduce((acc, emp) => {
-    let category = emp.visaType;
+  const visa_typeDistribution = filteredData.reduce((acc, emp) => {
+    let category = emp.visa_type;
     // Group F-1, OPT, OPT STEM together
-    if (emp.visaType === "F-1" || emp.visaType === "OPT" || emp.visaType === "OPT STEM") {
+    if (emp.visa_type === "F-1" || emp.visa_type === "OPT" || emp.visa_type === "OPT STEM") {
       category = "F-1";
-    } else if (emp.visaType === "H-1B") {
+    } else if (emp.visa_type === "H-1B") {
       category = "H-1B";
-    } else if (emp.visaType === "Permanent Resident") {
+    } else if (emp.visa_type === "Permanent Resident") {
       category = "PR";
     }
     acc[category] = (acc[category] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) : {};
+  }, {} as Record<string, number>);
 
-  const visaTypeData = Object.entries(visaTypeDistribution).map(([name, count]) => {
-    const percentage = Array.isArray(employeesData) && employeesData.length > 0
-      ? ((count / employeesData.length) * 100).toFixed(0)
+  const visa_typeData = Object.entries(visa_typeDistribution).map(([name, count]) => {
+    const percentage = filteredData.length > 0
+      ? ((count / filteredData.length) * 100).toFixed(0)
       : '0';
     return { name, count, percentage: `${percentage}%` };
   });
 
   // 2. Gender Distribution
-  const genderDistribution = Array.isArray(employeesData) ? employeesData.reduce((acc, emp) => {
-    const gender = emp.gender || "Prefer not to say";
+  const genderDistribution = filteredData.reduce((acc, emp) => {
+    const gender = employeesData.find(e => e.id === emp.id)?.gender || "Prefer not to say";
     acc[gender] = (acc[gender] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) : {};
+  }, {} as Record<string, number>);
 
   const genderData = Object.entries(genderDistribution).map(([name, count]) => {
-    const percentage = Array.isArray(employeesData) && employeesData.length > 0
-      ? ((count / employeesData.length) * 100).toFixed(0)
+    const percentage = filteredData.length > 0
+      ? ((count / filteredData.length) * 100).toFixed(0)
       : '0';
     return { name, count, percentage: `${percentage}%` };
   });
 
   // 3. Department Breakdown
-  const departmentDistribution = Array.isArray(employeesData) ? employeesData.reduce((acc, emp) => {
+  const departmentDistribution = filteredData.reduce((acc, emp) => {
     acc[emp.department] = (acc[emp.department] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) : {};
+  }, {} as Record<string, number>);
 
   const departmentData = Object.entries(departmentDistribution)
     .map(([name, count]) => ({ name, count }))
@@ -271,25 +317,25 @@ export function Reports() {
 
   // Get unique values for filters
   const uniqueDepartments = Array.from(new Set(reportData.map(d => d.department))).sort();
-  const uniqueVisaTypes = Array.from(new Set(reportData.map(d => d.visaType))).sort();
+  const uniquevisa_types = Array.from(new Set(reportData.map(d => d.visa_type))).sort();
   const uniqueCountries = Array.from(new Set(reportData.map(d => d.country))).filter(Boolean).sort();
-  const uniquePrStatuses = Array.from(new Set(reportData.map(d => d.prStatus))).sort();
+  const uniquepr_statuses = Array.from(new Set(reportData.map(d => d.pr_status))).sort();
 
   // Export functions
   const exportCSV = () => {
-    const headers = ["Employee Name", "Department", "Title", "Case Type", "Filed By", "Start Date", "Expiration Date", "Dependents", "PR Status", "Country", "Notes"];
+    const headers = ["Employee Name", "Department", "Title", "Case Type", "Filed By", "Start Date", "Expiration Date", "number_of_dependents", "PR Status", "Country", "Notes"];
     const csvContent = [
       headers.join(","),
       ...sortedData.map(row => [
         `"${row.name}"`,
         `"${row.department}"`,
         `"${row.title}"`,
-        `"${row.caseType}"`,
-        `"${row.filedBy}"`,
-        row.startDate,
-        row.expirationDate,
-        row.dependents,
-        `"${row.prStatus}"`,
+        `"${row.case_type}"`,
+        `"${row.filed_by}"`,
+        row.start_date,
+        row.expiration_date,
+        row.number_of_dependents,
+        `"${row.pr_status}"`,
         `"${row.country}"`,
         `"${row.notes}"`
       ].join(","))
@@ -375,6 +421,31 @@ export function Reports() {
           </div>
         </div>
 
+        {/* Reporting Toolbar */}
+        <div className="flex justify-end mb-6">
+          <ReportingToolbar
+            onGenerateReport={(start_date, endDate, mode) => {
+              setReportStartDate(start_date);
+              setReportEndDate(endDate);
+              setReportMode(mode);
+              
+              // Filter data based on date range
+              const start = new Date(start_date);
+              const end = new Date(endDate);
+              
+              const filteredCount = reportData.filter((emp) => {
+                const expDate = new Date(emp.expiration_date);
+                return expDate >= start && expDate <= end;
+              }).length;
+              
+              toast.success(`Report generated for ${mode === 'fiscal' ? 'Fiscal Year' : mode === 'academic' ? 'Academic Year' : mode === 'calendar' ? 'Calendar Year' : 'Custom Range'}`, {
+                description: `${filteredCount} employees found with visa expiration dates in the range ${new Date(start_date).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`,
+                duration: 5000,
+              });
+            }}
+          />
+        </div>
+
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Employees */}
@@ -436,7 +507,7 @@ export function Reports() {
             <Card className="p-6 bg-white border-[#E5E5E5] shadow-sm">
               <h3 className="text-base text-[#1E1E1E] mb-4">Employees by Visa Type</h3>
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={visaTypeData} layout="vertical">
+                <BarChart data={visa_typeData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
                   <XAxis type="number" tick={{ fill: "#4A4A4A", fontSize: 12 }} />
                   <YAxis 
@@ -457,7 +528,7 @@ export function Reports() {
                     ]}
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                    {visaTypeData.map((entry, index) => (
+                    {visa_typeData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
                         fill={
@@ -471,7 +542,7 @@ export function Reports() {
                 </BarChart>
               </ResponsiveContainer>
               <div className="mt-4 space-y-2">
-                {visaTypeData.map((item) => (
+                {visa_typeData.map((item) => (
                   <div key={item.name} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div 
@@ -629,16 +700,16 @@ export function Reports() {
               <div className="space-y-3">
                 <Label className="text-sm text-[#4A4A4A]">Visa Type</Label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {uniqueVisaTypes.map((visa) => (
+                  {uniquevisa_types.map((visa) => (
                     <div key={visa} className="flex items-center space-x-2">
                       <Checkbox
                         id={`visa-${visa}`}
-                        checked={visaTypeFilter.includes(visa)}
+                        checked={visa_typeFilter.includes(visa)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setVisaTypeFilter([...visaTypeFilter, visa]);
+                            setvisa_typeFilter([...visa_typeFilter, visa]);
                           } else {
-                            setVisaTypeFilter(visaTypeFilter.filter(v => v !== visa));
+                            setvisa_typeFilter(visa_typeFilter.filter(v => v !== visa));
                           }
                         }}
                       />
@@ -679,16 +750,16 @@ export function Reports() {
               <div className="space-y-3">
                 <Label className="text-sm text-[#4A4A4A]">PR Status</Label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {uniquePrStatuses.map((status) => (
+                  {uniquepr_statuses.map((status) => (
                     <div key={status} className="flex items-center space-x-2">
                       <Checkbox
                         id={`pr-${status}`}
-                        checked={prStatusFilter.includes(status)}
+                        checked={pr_statusFilter.includes(status)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setPrStatusFilter([...prStatusFilter, status]);
+                            setpr_statusFilter([...pr_statusFilter, status]);
                           } else {
-                            setPrStatusFilter(prStatusFilter.filter(s => s !== status));
+                            setpr_statusFilter(pr_statusFilter.filter(s => s !== status));
                           }
                         }}
                       />
@@ -707,9 +778,9 @@ export function Reports() {
                 size="sm"
                 onClick={() => {
                   setDepartmentFilter([]);
-                  setVisaTypeFilter([]);
+                  setvisa_typeFilter([]);
                   setCountryFilter([]);
-                  setPrStatusFilter([]);
+                  setpr_statusFilter([]);
                 }}
                 className="border-[#E5E5E5]"
               >
@@ -766,7 +837,7 @@ export function Reports() {
                       <TableHead className="text-[#1E1E1E]">Filed By</TableHead>
                       <TableHead className="text-[#1E1E1E]">
                         <button
-                          onClick={() => handleSort("startDate")}
+                          onClick={() => handleSort("start_date")}
                           className="flex items-center gap-1 hover:text-black"
                         >
                           Start Date
@@ -775,14 +846,14 @@ export function Reports() {
                       </TableHead>
                       <TableHead className="text-[#1E1E1E]">
                         <button
-                          onClick={() => handleSort("expirationDate")}
+                          onClick={() => handleSort("expiration_date")}
                           className="flex items-center gap-1 hover:text-black"
                         >
                           Expiration
                           <ArrowUpDown className="h-3 w-3" />
                         </button>
                       </TableHead>
-                      <TableHead className="text-[#1E1E1E]">Dependents</TableHead>
+                      <TableHead className="text-[#1E1E1E]">number_of_dependents</TableHead>
                       <TableHead className="text-[#1E1E1E]">PR Status</TableHead>
                       <TableHead className="text-[#1E1E1E]">Country</TableHead>
                       <TableHead className="text-[#1E1E1E]">Notes</TableHead>
@@ -799,32 +870,32 @@ export function Reports() {
                         <TableCell className="text-[#1E1E1E]">{row.name}</TableCell>
                         <TableCell className="text-[#4A4A4A]">{row.department}</TableCell>
                         <TableCell className="text-[#4A4A4A]">{row.title}</TableCell>
-                        <TableCell className="text-[#4A4A4A]">{row.caseType}</TableCell>
-                        <TableCell className="text-[#4A4A4A]">{row.filedBy}</TableCell>
+                        <TableCell className="text-[#4A4A4A]">{row.case_type}</TableCell>
+                        <TableCell className="text-[#4A4A4A]">{row.filed_by}</TableCell>
                         <TableCell className="text-[#4A4A4A]">
-                          {new Date(row.startDate).toLocaleDateString("en-US", {
+                          {new Date(row.start_date).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "short",
                             day: "numeric"
                           })}
                         </TableCell>
                         <TableCell className="text-[#4A4A4A]">
-                          {new Date(row.expirationDate).toLocaleDateString("en-US", {
+                          {new Date(row.expiration_date).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "short",
                             day: "numeric"
                           })}
                         </TableCell>
-                        <TableCell className="text-[#4A4A4A]">{row.dependents}</TableCell>
+                        <TableCell className="text-[#4A4A4A]">{row.number_of_dependents}</TableCell>
                         <TableCell>
                           <Badge
                             style={{
-                              backgroundColor: PR_STATUS_COLORS[row.prStatus] || "#B1B1B1",
+                              backgroundColor: PR_STATUS_COLORS[row.pr_status] || "#B1B1B1",
                               color: "white",
                               border: "none"
                             }}
                           >
-                            {row.prStatus}
+                            {row.pr_status}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-[#4A4A4A]">{row.country}</TableCell>
@@ -850,7 +921,7 @@ export function Reports() {
           <Card className="p-6 bg-white border-[#E5E5E5]">
             <h3 className="text-base text-[#1E1E1E] mb-4">Employees by Case Type</h3>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={caseTypeData}>
+              <BarChart data={case_typeData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
                 <XAxis 
                   dataKey="name" 

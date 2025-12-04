@@ -9,18 +9,18 @@ export type VisaStatus = "Active" | "Pending" | "Expired" | "Processing" | "Expi
 
 /**
  * Calculate the current visa status based on expiration date and pending applications
- * @param expirationDate - The visa expiration date
+ * @param expiration_date - The visa expiration date
  * @param hasPendingApplication - Whether there's a pending visa application
  * @returns The calculated visa status
  */
 export function calculateVisaStatus(
-  expirationDate: string,
+  expiration_date: string,
   hasPendingApplication: boolean = false
 ): VisaStatus {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
   
-  const expDate = new Date(expirationDate);
+  const expDate = new Date(expiration_date);
   expDate.setHours(0, 0, 0, 0);
   
   const daysUntilExpiration = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -55,14 +55,14 @@ export function calculateVisaStatus(
 
 /**
  * Calculate days remaining until expiration
- * @param expirationDate - The visa expiration date
+ * @param expiration_date - The visa expiration date
  * @returns Number of days until expiration (negative if expired)
  */
-export function calculateDaysRemaining(expirationDate: string): number {
+export function calculateDaysRemaining(expiration_date: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  const expDate = new Date(expirationDate);
+  const expDate = new Date(expiration_date);
   expDate.setHours(0, 0, 0, 0);
   
   return Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -112,8 +112,8 @@ export function getStatusBadgeVariant(status: VisaStatus): "default" | "secondar
  */
 export function getEmployeeWithComputedStatus(employee: EmployeeData): EmployeeData & { computedStatus: VisaStatus; daysRemaining: number } {
   const hasPendingApplication = !!employee.pendingVisaApplication;
-  const computedStatus = calculateVisaStatus(employee.expirationDate, hasPendingApplication);
-  const daysRemaining = calculateDaysRemaining(employee.expirationDate);
+  const computedStatus = calculateVisaStatus(employee.expiration_date, hasPendingApplication);
+  const daysRemaining = calculateDaysRemaining(employee.expiration_date);
   
   return {
     ...employee,

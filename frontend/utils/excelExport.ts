@@ -16,14 +16,14 @@ export function exportToExcel(data: VisaCase[], filename: string = "employee_dat
     "Email": item.employee.email || "N/A",
     "Phone": item.employee.phone || "N/A",
     "Department": item.employee.department,
-    "Visa Type": item.visaType,
+    "Visa Type": item.visa_type,
     "Status": item.status,
-    "Start Date": item.visaStartDate || "N/A",
-    "Expiration Date": item.expirationDate,
+    "Start Date": item.visa_start_date || "N/A",
+    "Expiration Date": item.expiration_date,
     "Days Left": item.daysLeft,
     "Filed By": item.visaFiledBy || "Self-Petition",
     "Has Pending Application": item.hasPendingApplication ? "Yes" : "No",
-    "Pending Target Visa Type": item.pendingTargetVisaType || "N/A",
+    "Pending Target Visa Type": item.pendingTargetvisa_type || "N/A",
   }));
 
   // Create a new workbook
@@ -76,14 +76,14 @@ export function exportToExcelCustom(
     "Email": (item) => item.employee.email || "N/A",
     "Phone": (item) => item.employee.phone || "N/A",
     "Department": (item) => item.employee.department,
-    "Visa Type": (item) => item.visaType,
+    "Visa Type": (item) => item.visa_type,
     "Status": (item) => item.status,
-    "Start Date": (item) => item.visaStartDate || "N/A",
-    "Expiration Date": (item) => item.expirationDate,
+    "Start Date": (item) => item.visa_start_date || "N/A",
+    "Expiration Date": (item) => item.expiration_date,
     "Days Left": (item) => item.daysLeft,
     "Filed By": (item) => item.visaFiledBy || "Self-Petition",
     "Has Pending Application": (item) => item.hasPendingApplication ? "Yes" : "No",
-    "Pending Target Visa Type": (item) => item.pendingTargetVisaType || "N/A",
+    "Pending Target Visa Type": (item) => item.pendingTargetvisa_type || "N/A",
   };
 
   // Transform data with selected columns only

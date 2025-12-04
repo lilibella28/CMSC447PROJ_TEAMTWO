@@ -49,9 +49,9 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
     first_name: "",
     last_name: "",
     email: "", // UMBC Email
-    personalEmail: "",
+    personal_email: "",
     gender: "",
-    countryOfBirth: "",
+    country_of_birth: "",
     citizenship: "",
     phone: "",
     address: "",
@@ -60,40 +60,40 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
     passportNumber: "",
     // Employment Information
     department: "",
-    employeeTitle: "",
-    departmentAdmin: "",
-    departmentAdvisor: "",
-    annualSalary: "",
+    employee_title: "",
+    department_admin: "",
+    department_advisor: "",
+   annual_salary: "",
     // Visa & Immigration
-    visaType: "",
+    visa_type: "",
     status: "",
-    filedBy: "",
-    caseType: "",
-    i94Number: "",
-    sevisId: "",
+    filed_by: "",
+    case_type: "",
+   i94_number: "",
+    sevis_id: "",
     // Permanent Residency
-    prFilingDate: "",
-    prStatus: "",
-    prNotes: "",
+    pr_filing_date: "",
+    pr_status: "",
+    pr_notes: "",
     // Education
-    highestEducation: "",
-    fieldOfStudy: "",
+    highest_education: "",
+    field_of_study: "",
     // Administrative
-    socCode: "",
-    socCodeDescription: "",
-    generalNotes: "",
-    // Dependents
-    numberOfDependents: "0",
+    soc_code: "",
+    soc_code_description: "",
+    general_notes: "",
+    // number_of_dependents
+    number_of_dependents : "0",
   });
 
   const [dates, setDates] = useState({
-    expirationDate: undefined as Date | undefined,
-    visaStartDate: undefined as Date | undefined,
-    initialH1BStartDate: undefined as Date | undefined,
-    prepExtensionDate: undefined as Date | undefined,
-    maxHPeriod: undefined as Date | undefined,
-    i94ExpiryDate: undefined as Date | undefined,
-    prFilingDate: undefined as Date | undefined,
+    expiration_date: undefined as Date | undefined,
+    visa_start_date: undefined as Date | undefined,
+    initial_h1b_start_date: undefined as Date | undefined,
+    prep_extension_date : undefined as Date | undefined,
+    max_h_period: undefined as Date | undefined,
+    i94_expiry_date: undefined as Date | undefined,
+    pr_filing_date: undefined as Date | undefined,
   });
 
   const [openSections, setOpenSections] = useState({
@@ -119,9 +119,9 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
           first_name: data.first_name || "",
           last_name: data.last_name || "",
           email: data.email || "",
-          personalEmail: data.personalEmail || "",
+          personal_email: data.personal_email || "",
           gender: data.gender || "",
-          countryOfBirth: data.countryOfBirth || "",
+          country_of_birth: data.country_of_birth || "",
           citizenship: data.citizenship?.join(", ") || "",
           phone: data.phone || "",
           address: data.address || "",
@@ -129,36 +129,36 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
           dateOfBirth: data.dateOfBirth || "",
           passportNumber: data.passportNumber || "",
           department: data.department || "",
-          employeeTitle: data.employeeTitle || "",
-          departmentAdmin: data.departmentAdmin || "",
-          departmentAdvisor: data.departmentAdvisor || "",
-          annualSalary: data.annualSalary?.toString() || "",
-          visaType: data.visaType || "",
+          employee_title: data.employee_title || "",
+          department_admin: data.department_admin || "",
+          department_advisor: data.department_advisor || "",
+         annual_salary: data.annual_salary?.toString() || "",
+          visa_type: data.visa_type || "",
           status: data.status || "",
-          filedBy: data.visaFiledBy || "",
-          caseType: data.caseType || "",
-          i94Number: data.i94Number || "",
-          sevisId: data.sevisId || "",
-          prFilingDate: data.permanentResidency?.filingDate || "",
-          prStatus: data.permanentResidency?.currentStatus || "",
-          prNotes: data.permanentResidency?.notes || "",
-          highestEducation: data.highestEducation || "",
-          fieldOfStudy: data.fieldOfStudy || "",
-          socCode: data.socCode || "",
-          socCodeDescription: data.socCodeDescription || "",
-          generalNotes: data.generalNotes || "",
-          numberOfDependents: data.dependents?.toString() || "0",
+          filed_by: data.visaFiledBy || "",
+          case_type: data.case_type || "",
+         i94_number: data.i94_number  || "",
+          sevis_id: data.sevis_id || "",
+          pr_filing_date: data.permanentResidency?.filingDate || "",
+          pr_status: data.permanentResidency?.currentStatus || "",
+          pr_notes: data.permanentResidency?.notes || "",
+          highest_education: data.highest_education || "",
+          field_of_study: data.field_of_study || "",
+          soc_code: data.soc_code || "",
+          soc_code_description: data.soc_code_description || "",
+          general_notes: data.general_notes || "",
+          number_of_dependents : data.number_of_dependents?.toString() || "0",
         });
 
         // Populate dates
         setDates({
-          expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
-          visaStartDate: data.visaStartDate ? new Date(data.visaStartDate) : undefined,
-          initialH1BStartDate: data.initialH1BStartDate ? new Date(data.initialH1BStartDate) : undefined,
-          prepExtensionDate: data.prepExtensionDate ? new Date(data.prepExtensionDate) : undefined,
-          maxHPeriod: data.maxHPeriod ? new Date(data.maxHPeriod) : undefined,
-          i94ExpiryDate: data.i94ExpiryDate ? new Date(data.i94ExpiryDate) : undefined,
-          prFilingDate: data.permanentResidency?.filingDate ? new Date(data.permanentResidency.filingDate) : undefined,
+          expiration_date: data.expiration_date ? new Date(data.expiration_date) : undefined,
+          visa_start_date: data.visa_start_date ? new Date(data.visa_start_date) : undefined,
+          initial_h1b_start_date: data.initial_h1b_start_date ? new Date(data.initial_h1b_start_date) : undefined,
+          prep_extension_date : data.prep_extension_date  ? new Date(data.prep_extension_date ) : undefined,
+          max_h_period: data.max_h_period ? new Date(data.max_h_period) : undefined,
+          i94_expiry_date: data.i94_expiry_date ? new Date(data.i94_expiry_date) : undefined,
+          pr_filing_date: data.permanentResidency?.filingDate ? new Date(data.permanentResidency.filingDate) : undefined,
         });
 
         setIsLoading(false);
@@ -208,11 +208,11 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
     if (!formData.department) {
       newErrors.department = "Department is required";
     }
-    if (!formData.visaType) {
-      newErrors.visaType = "Visa type is required";
+    if (!formData.visa_type) {
+      newErrors.visa_type = "Visa type is required";
     }
-    if (!dates.expirationDate) {
-      newErrors.expirationDate = "Expiration date is required";
+    if (!dates.expiration_date) {
+      newErrors.expiration_date = "Expiration date is required";
     }
 
     setErrors(newErrors);
@@ -226,50 +226,103 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
       try {
         setIsSaving(true);
         
-        const updatedData: Partial<Employee> = {
+        // const updatedData: Partial<Employee> = {
+        //   first_name: formData.first_name,
+        //   last_name: formData.last_name,
+        //   employeeName: `${formData.first_name} ${formData.last_name}`,
+        //   email: formData.email,
+        //   personal_email: formData.personal_email || undefined,
+        //   gender: formData.gender || undefined,
+        //   country_of_birth: formData.country_of_birth || undefined,
+        //   citizenship: formData.citizenship ? formData.citizenship.split(",").map(c => c.trim()) : [],
+        //   phone: formData.phone,
+        //   address: formData.address,
+        //   nationality: formData.nationality,
+        //   dateOfBirth: formData.dateOfBirth,
+        //   passportNumber: formData.passportNumber,
+        //   department: formData.department,
+        //   employee_title: formData.employee_title || undefined,
+        //   department_admin: formData.department_admin || undefined,
+        //   department_advisor: formData.department_advisor || undefined,
+        //  annual_salary: formData.annual_salary ? parseFloat(formData.annual_salary) : undefined,
+        //   visa_type: formData.visa_type,
+        //   status: formData.status as any,
+        //   visafiled_by: formData.filed_by as any,
+        //   case_type: formData.case_type || undefined,
+        //  i94_number: formData.i94_number ,
+        //   sevis_id: formData.sevis_id,
+        //   expiration_date: dates.expiration_date ? format(dates.expiration_date, "yyyy-MM-dd") : "",
+        //   visa_start_date: dates.visa_start_date ? format(dates.visa_start_date, "yyyy-MM-dd") : "",
+        //   initial_h1b_start_date: dates.initial_h1b_start_date ? format(dates.initial_h1b_start_date, "yyyy-MM-dd") : undefined,
+        //   prep_extension_date : dates.prep_extension_date  ? format(dates.prep_extension_date , "yyyy-MM-dd") : undefined,
+        //   max_h_period: dates.max_h_period ? format(dates.max_h_period, "yyyy-MM-dd") : undefined,
+        //   i94_expiry_date: dates.i94_expiry_date ? format(dates.i94_expiry_date, "yyyy-MM-dd") : undefined,
+        //   permanentResidency: {
+        //     filingDate: dates.pr_filing_date ? format(dates.pr_filing_date, "yyyy-MM-dd") : undefined,
+        //     currentStatus: formData.pr_status as any || undefined,
+        //     notes: formData.pr_notes || undefined,
+        //   },
+        //   highest_education: formData.highest_education as any || undefined,
+        //   field_of_study: formData.field_of_study || undefined,
+        //   soc_code: formData.soc_code || undefined,
+        //   soc_code_description: formData.soc_code_description || undefined,
+        //   general_notes: formData.general_notes || undefined,
+        //   number_of_dependents: parseInt(formData.number_of_dependents ) || 0,
+        // };
+        const updatedData: any = {
           first_name: formData.first_name,
           last_name: formData.last_name,
-          employeeName: `${formData.first_name} ${formData.last_name}`,
-          email: formData.email,
-          personalEmail: formData.personalEmail || undefined,
-          gender: formData.gender || undefined,
-          countryOfBirth: formData.countryOfBirth || undefined,
-          citizenship: formData.citizenship ? formData.citizenship.split(",").map(c => c.trim()) : [],
-          phone: formData.phone,
-          address: formData.address,
-          nationality: formData.nationality,
-          dateOfBirth: formData.dateOfBirth,
-          passportNumber: formData.passportNumber,
-          department: formData.department,
-          employeeTitle: formData.employeeTitle || undefined,
-          departmentAdmin: formData.departmentAdmin || undefined,
-          departmentAdvisor: formData.departmentAdvisor || undefined,
-          annualSalary: formData.annualSalary ? parseFloat(formData.annualSalary) : undefined,
-          visaType: formData.visaType,
-          status: formData.status as any,
-          visaFiledBy: formData.filedBy as any,
-          caseType: formData.caseType || undefined,
-          i94Number: formData.i94Number,
-          sevisId: formData.sevisId,
-          expirationDate: dates.expirationDate ? format(dates.expirationDate, "yyyy-MM-dd") : "",
-          visaStartDate: dates.visaStartDate ? format(dates.visaStartDate, "yyyy-MM-dd") : "",
-          initialH1BStartDate: dates.initialH1BStartDate ? format(dates.initialH1BStartDate, "yyyy-MM-dd") : undefined,
-          prepExtensionDate: dates.prepExtensionDate ? format(dates.prepExtensionDate, "yyyy-MM-dd") : undefined,
-          maxHPeriod: dates.maxHPeriod ? format(dates.maxHPeriod, "yyyy-MM-dd") : undefined,
-          i94ExpiryDate: dates.i94ExpiryDate ? format(dates.i94ExpiryDate, "yyyy-MM-dd") : undefined,
-          permanentResidency: {
-            filingDate: dates.prFilingDate ? format(dates.prFilingDate, "yyyy-MM-dd") : undefined,
-            currentStatus: formData.prStatus as any || undefined,
-            notes: formData.prNotes || undefined,
-          },
-          highestEducation: formData.highestEducation as any || undefined,
-          fieldOfStudy: formData.fieldOfStudy || undefined,
-          socCode: formData.socCode || undefined,
-          socCodeDescription: formData.socCodeDescription || undefined,
-          generalNotes: formData.generalNotes || undefined,
-          dependents: parseInt(formData.numberOfDependents) || 0,
+          email: formData.email || null,
+          personal_email: formData.personal_email || null,
+          gender: formData.gender || null,
+          country_of_birth: formData.country_of_birth || null,
+          citizenship: formData.citizenship
+            ? formData.citizenship.split(",").map(c => c.trim())
+            : null,
+          department: formData.department || null,
+          employee_title: formData.employee_title || null,
+          department_admin: formData.department_admin || null,
+          department_advisor: formData.department_advisor || null,
+         annual_salary: formData.annual_salary
+            ? parseFloat(formData.annual_salary)
+            : null,
+          visa_type: formData.visa_type || null,
+          status: formData.status || null,
+          filed_by: formData.filed_by || null,
+          case_type: formData.case_type || null,
+         i94_number: formData.i94_number  || null,
+          sevis_id: formData.sevis_id || null,
+          expiration_date: dates.expiration_date
+            ? format(dates.expiration_date, "yyyy-MM-dd")
+            : null,
+          visa_start_date: dates.visa_start_date
+            ? format(dates.visa_start_date, "yyyy-MM-dd")
+            : null,
+          initial_h1b_start_date: dates.initial_h1b_start_date
+            ? format(dates.initial_h1b_start_date, "yyyy-MM-dd")
+            : null,
+          prep_extension_date : dates.prep_extension_date 
+            ? format(dates.prep_extension_date , "yyyy-MM-dd")
+            : null,
+          max_h_period: dates.max_h_period
+            ? format(dates.max_h_period, "yyyy-MM-dd")
+            : null,
+          i94_expiry_date: dates.i94_expiry_date
+            ? format(dates.i94_expiry_date, "yyyy-MM-dd")
+            : null,
+          pr_filing_date: dates.pr_filing_date
+            ? format(dates.pr_filing_date, "yyyy-MM-dd")
+            : null,
+          pr_status: formData.pr_status || null,
+          pr_notes: formData.pr_notes || null,
+          highest_education: formData.highest_education || null,
+          field_of_study: formData.field_of_study || null,
+          soc_code: formData.soc_code || null,
+          soc_code_description: formData.soc_code_description || null,
+          general_notes: formData.general_notes || null,
+          number_of_dependents: parseInt(formData.number_of_dependents ) || 0,
         };
-
+        
         await updateEmployee(employee.id, updatedData);
         toast.success("Employee information updated successfully!");
         onSave();
@@ -403,14 +456,14 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Personal Email */}
                       <div className="space-y-2">
-                        <Label htmlFor="personalEmail" className="text-[#1E1E1E]">
+                        <Label htmlFor="personal_email" className="text-[#1E1E1E]">
                           Personal Email
                         </Label>
                         <Input
-                          id="personalEmail"
+                          id="personal_email"
                           type="email"
-                          value={formData.personalEmail}
-                          onChange={(e) => handleInputChange("personalEmail", e.target.value)}
+                          value={formData.personal_email}
+                          onChange={(e) => handleInputChange("personal_email", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="personal@example.com"
                         />
@@ -473,27 +526,27 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Country of Birth */}
                       <div className="space-y-2">
-                        <Label htmlFor="countryOfBirth" className="text-[#1E1E1E]">
+                        <Label htmlFor="country_of_birth" className="text-[#1E1E1E]">
                           Country of Birth
                         </Label>
                         <Input
-                          id="countryOfBirth"
-                          value={formData.countryOfBirth}
-                          onChange={(e) => handleInputChange("countryOfBirth", e.target.value)}
+                          id="country_of_birth"
+                          value={formData.country_of_birth}
+                          onChange={(e) => handleInputChange("country_of_birth", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="Enter country"
                         />
                       </div>
 
-                      {/* Citizenships */}
+                      {/* citizenship */}
                       <div className="space-y-2">
-                        <Label htmlFor="citizenships" className="text-[#1E1E1E]">
+                        <Label htmlFor="citizenship" className="text-[#1E1E1E]">
                           Citizenship(s)
                         </Label>
                         <Input
-                          id="citizenships"
+                          id="citizenship"
                           value={formData.citizenship}
-                          onChange={(e) => handleInputChange("citizenships", e.target.value)}
+                          onChange={(e) => handleInputChange("citizenship", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="e.g., India, Canada (comma separated)"
                         />
@@ -582,13 +635,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Job Title */}
                       <div className="space-y-2">
-                        <Label htmlFor="employeeTitle" className="text-[#1E1E1E]">
+                        <Label htmlFor="employee_title" className="text-[#1E1E1E]">
                           Job Title / Position
                         </Label>
                         <Input
-                          id="employeeTitle"
-                          value={formData.employeeTitle}
-                          onChange={(e) => handleInputChange("employeeTitle", e.target.value)}
+                          id="employee_title"
+                          value={formData.employee_title}
+                          onChange={(e) => handleInputChange("employee_title", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="e.g., Research Assistant, Professor"
                         />
@@ -596,13 +649,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Department Admin */}
                       <div className="space-y-2">
-                        <Label htmlFor="departmentAdmin" className="text-[#1E1E1E]">
+                        <Label htmlFor="department_admin" className="text-[#1E1E1E]">
                           Department Admin
                         </Label>
                         <Input
-                          id="departmentAdmin"
-                          value={formData.departmentAdmin}
-                          onChange={(e) => handleInputChange("departmentAdmin", e.target.value)}
+                          id="department_admin"
+                          value={formData.department_admin}
+                          onChange={(e) => handleInputChange("department_admin", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="Admin name"
                         />
@@ -610,13 +663,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Department Advisor / PI / Chair */}
                       <div className="space-y-2">
-                        <Label htmlFor="departmentAdvisor" className="text-[#1E1E1E]">
+                        <Label htmlFor="department_advisor" className="text-[#1E1E1E]">
                           Department Advisor / PI / Chair
                         </Label>
                         <Input
-                          id="departmentAdvisor"
-                          value={formData.departmentAdvisor}
-                          onChange={(e) => handleInputChange("departmentAdvisor", e.target.value)}
+                          id="department_advisor"
+                          value={formData.department_advisor}
+                          onChange={(e) => handleInputChange("department_advisor", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="Advisor name"
                         />
@@ -624,14 +677,14 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Annual Salary */}
                       <div className="space-y-2">
-                        <Label htmlFor="annualSalary" className="text-[#1E1E1E]">
+                        <Label htmlFor="annual_salary" className="text-[#1E1E1E]">
                           Annual Salary
                         </Label>
                         <Input
-                          id="annualSalary"
+                          id="annual_salary"
                           type="number"
-                          value={formData.annualSalary}
-                          onChange={(e) => handleInputChange("annualSalary", e.target.value)}
+                          value={formData.annual_salary}
+                          onChange={(e) => handleInputChange("annual_salary", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="65000"
                         />
@@ -661,14 +714,14 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Visa Type */}
                       <div className="space-y-2">
-                        <Label htmlFor="visaType" className="text-[#1E1E1E]">
+                        <Label htmlFor="visa_type" className="text-[#1E1E1E]">
                           Visa Type <span className="text-[#DC2626]">*</span>
                         </Label>
                         <Select
-                          value={formData.visaType}
-                          onValueChange={(value) => handleInputChange("visaType", value)}
+                          value={formData.visa_type}
+                          onValueChange={(value) => handleInputChange("visa_type", value)}
                         >
-                          <SelectTrigger className={`border-[#E5E5E5] ${errors.visaType ? "border-[#DC2626]" : ""}`}>
+                          <SelectTrigger className={`border-[#E5E5E5] ${errors.visa_type ? "border-[#DC2626]" : ""}`}>
                             <SelectValue placeholder="Select visa type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -679,8 +732,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                             <SelectItem value="Permanent Resident">Permanent Resident</SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.visaType && (
-                          <p className="text-sm text-[#DC2626]">{errors.visaType}</p>
+                        {errors.visa_type && (
+                          <p className="text-sm text-[#DC2626]">{errors.visa_type}</p>
                         )}
                       </div>
 
@@ -713,12 +766,12 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                             <Button
                               variant="outline"
                               className={`w-full justify-start text-left border-[#E5E5E5] ${
-                                errors.expirationDate ? "border-[#DC2626]" : ""
+                                errors.expiration_date ? "border-[#DC2626]" : ""
                               }`}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                              {dates.expirationDate ? (
-                                format(dates.expirationDate, "MMM dd, yyyy")
+                              {dates.expiration_date ? (
+                                format(dates.expiration_date, "MMM dd, yyyy")
                               ) : (
                                 <span className="text-[#9CA3AF]">Pick a date</span>
                               )}
@@ -727,14 +780,14 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={dates.expirationDate}
-                              onSelect={(date) => handleDateChange("expirationDate", date)}
+                              selected={dates.expiration_date}
+                              onSelect={(date) => handleDateChange("expiration_date", date)}
                               initialFocus
                             />
                           </PopoverContent>
                         </Popover>
-                        {errors.expirationDate && (
-                          <p className="text-sm text-[#DC2626]">{errors.expirationDate}</p>
+                        {errors.expiration_date && (
+                          <p className="text-sm text-[#DC2626]">{errors.expiration_date}</p>
                         )}
                       </div>
 
@@ -748,8 +801,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                               className="w-full justify-start text-left border-[#E5E5E5]"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                              {dates.visaStartDate ? (
-                                format(dates.visaStartDate, "MMM dd, yyyy")
+                              {dates.visa_start_date ? (
+                                format(dates.visa_start_date, "MMM dd, yyyy")
                               ) : (
                                 <span className="text-[#9CA3AF]">Pick a date</span>
                               )}
@@ -758,8 +811,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={dates.visaStartDate}
-                              onSelect={(date) => handleDateChange("visaStartDate", date)}
+                              selected={dates.visa_start_date}
+                              onSelect={(date) => handleDateChange("visa_start_date", date)}
                               initialFocus
                             />
                           </PopoverContent>
@@ -768,10 +821,10 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Filed By */}
                       <div className="space-y-2">
-                        <Label htmlFor="filedBy" className="text-[#1E1E1E]">Filed By</Label>
+                        <Label htmlFor="filed_by" className="text-[#1E1E1E]">Filed By</Label>
                         <Select
-                          value={formData.filedBy}
-                          onValueChange={(value) => handleInputChange("filedBy", value)}
+                          value={formData.filed_by}
+                          onValueChange={(value) => handleInputChange("filed_by", value)}
                         >
                           <SelectTrigger className="border-[#E5E5E5]">
                             <SelectValue placeholder="Select who filed" />
@@ -786,11 +839,11 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Case Type */}
                       <div className="space-y-2">
-                        <Label htmlFor="caseType" className="text-[#1E1E1E]">Case Type</Label>
+                        <Label htmlFor="case_type" className="text-[#1E1E1E]">Case Type</Label>
                         <Input
-                          id="caseType"
-                          value={formData.caseType}
-                          onChange={(e) => handleInputChange("caseType", e.target.value)}
+                          id="case_type"
+                          value={formData.case_type}
+                          onChange={(e) => handleInputChange("case_type", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="e.g., H-1B Extension, Initial COS"
                         />
@@ -798,11 +851,11 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* I-94 Number */}
                       <div className="space-y-2">
-                        <Label htmlFor="i94Number" className="text-[#1E1E1E]">I-94 Number</Label>
+                        <Label htmlFor="i94_number " className="text-[#1E1E1E]">I-94 Number</Label>
                         <Input
-                          id="i94Number"
-                          value={formData.i94Number}
-                          onChange={(e) => handleInputChange("i94Number", e.target.value)}
+                          id="i94_number "
+                          value={formData.i94_number }
+                          onChange={(e) => handleInputChange("i94_number ", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="Enter I-94 number"
                         />
@@ -818,8 +871,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                               className="w-full justify-start text-left border-[#E5E5E5]"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                              {dates.i94ExpiryDate ? (
-                                format(dates.i94ExpiryDate, "MMM dd, yyyy")
+                              {dates.i94_expiry_date ? (
+                                format(dates.i94_expiry_date, "MMM dd, yyyy")
                               ) : (
                                 <span className="text-[#9CA3AF]">Pick a date</span>
                               )}
@@ -828,8 +881,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={dates.i94ExpiryDate}
-                              onSelect={(date) => handleDateChange("i94ExpiryDate", date)}
+                              selected={dates.i94_expiry_date}
+                              onSelect={(date) => handleDateChange("i94_expiry_date", date)}
                               initialFocus
                             />
                           </PopoverContent>
@@ -838,11 +891,11 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* SEVIS ID */}
                       <div className="space-y-2">
-                        <Label htmlFor="sevisId" className="text-[#1E1E1E]">SEVIS ID</Label>
+                        <Label htmlFor="sevis_id" className="text-[#1E1E1E]">SEVIS ID</Label>
                         <Input
-                          id="sevisId"
-                          value={formData.sevisId}
-                          onChange={(e) => handleInputChange("sevisId", e.target.value)}
+                          id="sevis_id"
+                          value={formData.sevis_id}
+                          onChange={(e) => handleInputChange("sevis_id", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="Enter SEVIS ID"
                         />
@@ -858,8 +911,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                               className="w-full justify-start text-left border-[#E5E5E5]"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                              {dates.initialH1BStartDate ? (
-                                format(dates.initialH1BStartDate, "MMM dd, yyyy")
+                              {dates.initial_h1b_start_date ? (
+                                format(dates.initial_h1b_start_date, "MMM dd, yyyy")
                               ) : (
                                 <span className="text-[#9CA3AF]">Pick a date</span>
                               )}
@@ -868,8 +921,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={dates.initialH1BStartDate}
-                              onSelect={(date) => handleDateChange("initialH1BStartDate", date)}
+                              selected={dates.initial_h1b_start_date}
+                              onSelect={(date) => handleDateChange("initial_h1b_start_date", date)}
                               initialFocus
                             />
                           </PopoverContent>
@@ -898,8 +951,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                               className="w-full justify-start text-left border-[#E5E5E5]"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                              {dates.prepExtensionDate ? (
-                                format(dates.prepExtensionDate, "MMM dd, yyyy")
+                              {dates.prep_extension_date  ? (
+                                format(dates.prep_extension_date , "MMM dd, yyyy")
                               ) : (
                                 <span className="text-[#9CA3AF]">Pick a date</span>
                               )}
@@ -908,8 +961,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={dates.prepExtensionDate}
-                              onSelect={(date) => handleDateChange("prepExtensionDate", date)}
+                              selected={dates.prep_extension_date }
+                              onSelect={(date) => handleDateChange("prep_extension_date ", date)}
                               initialFocus
                             />
                           </PopoverContent>
@@ -938,8 +991,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                               className="w-full justify-start text-left border-[#E5E5E5]"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                              {dates.maxHPeriod ? (
-                                format(dates.maxHPeriod, "MMM dd, yyyy")
+                              {dates.max_h_period ? (
+                                format(dates.max_h_period, "MMM dd, yyyy")
                               ) : (
                                 <span className="text-[#9CA3AF]">Pick a date</span>
                               )}
@@ -948,25 +1001,25 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={dates.maxHPeriod}
-                              onSelect={(date) => handleDateChange("maxHPeriod", date)}
+                              selected={dates.max_h_period}
+                              onSelect={(date) => handleDateChange("max_h_period", date)}
                               initialFocus
                             />
                           </PopoverContent>
                         </Popover>
                       </div>
 
-                      {/* Number of Dependents */}
+                      {/* Number of number_of_dependents */}
                       <div className="space-y-2">
-                        <Label htmlFor="numberOfDependents" className="text-[#1E1E1E]">
-                          Number of Dependents
+                        <Label htmlFor="number_of_dependents " className="text-[#1E1E1E]">
+                          Number of number_of_dependents
                         </Label>
                         <Input
-                          id="numberOfDependents"
+                          id="number_of_dependents "
                           type="number"
                           min="0"
-                          value={formData.numberOfDependents}
-                          onChange={(e) => handleInputChange("numberOfDependents", e.target.value)}
+                          value={formData.number_of_dependents }
+                          onChange={(e) => handleInputChange("number_of_dependents ", e.target.value)}
                           className="border-[#E5E5E5]"
                         />
                       </div>
@@ -984,8 +1037,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                                   className="w-full justify-start text-left border-[#E5E5E5]"
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                                  {dates.prFilingDate ? (
-                                    format(dates.prFilingDate, "MMM dd, yyyy")
+                                  {dates.pr_filing_date ? (
+                                    format(dates.pr_filing_date, "MMM dd, yyyy")
                                   ) : (
                                     <span className="text-[#9CA3AF]">Pick a date</span>
                                   )}
@@ -994,8 +1047,8 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                               <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                   mode="single"
-                                  selected={dates.prFilingDate}
-                                  onSelect={(date) => handleDateChange("prFilingDate", date)}
+                                  selected={dates.pr_filing_date}
+                                  onSelect={(date) => handleDateChange("pr_filing_date", date)}
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -1003,10 +1056,10 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="prStatus" className="text-[#1E1E1E]">PR Status</Label>
+                            <Label htmlFor="pr_status" className="text-[#1E1E1E]">PR Status</Label>
                             <Select
-                              value={formData.prStatus}
-                              onValueChange={(value) => handleInputChange("prStatus", value)}
+                              value={formData.pr_status}
+                              onValueChange={(value) => handleInputChange("pr_status", value)}
                             >
                               <SelectTrigger className="border-[#E5E5E5]">
                                 <SelectValue placeholder="Select status" />
@@ -1022,11 +1075,11 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="prNotes" className="text-[#1E1E1E]">PR Notes</Label>
+                            <Label htmlFor="pr_notes" className="text-[#1E1E1E]">PR Notes</Label>
                             <Input
-                              id="prNotes"
-                              value={formData.prNotes}
-                              onChange={(e) => handleInputChange("prNotes", e.target.value)}
+                              id="pr_notes"
+                              value={formData.pr_notes}
+                              onChange={(e) => handleInputChange("pr_notes", e.target.value)}
                               className="border-[#E5E5E5]"
                               placeholder="Add notes"
                             />
@@ -1058,12 +1111,12 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Highest Education */}
                       <div className="space-y-2">
-                        <Label htmlFor="highestEducation" className="text-[#1E1E1E]">
+                        <Label htmlFor="highest_education" className="text-[#1E1E1E]">
                           Highest Education
                         </Label>
                         <Select
-                          value={formData.highestEducation}
-                          onValueChange={(value) => handleInputChange("highestEducation", value)}
+                          value={formData.highest_education}
+                          onValueChange={(value) => handleInputChange("highest_education", value)}
                         >
                           <SelectTrigger className="border-[#E5E5E5]">
                             <SelectValue placeholder="Select education level" />
@@ -1081,13 +1134,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Field of Study */}
                       <div className="space-y-2">
-                        <Label htmlFor="fieldOfStudy" className="text-[#1E1E1E]">
+                        <Label htmlFor="field_of_study" className="text-[#1E1E1E]">
                           Field of Study
                         </Label>
                         <Input
-                          id="fieldOfStudy"
-                          value={formData.fieldOfStudy}
-                          onChange={(e) => handleInputChange("fieldOfStudy", e.target.value)}
+                          id="field_of_study"
+                          value={formData.field_of_study}
+                          onChange={(e) => handleInputChange("field_of_study", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="e.g., Computer Science, Biology"
                         />
@@ -1118,7 +1171,7 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                       {/* SOC Code */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="socCode" className="text-[#1E1E1E]">
+                          <Label htmlFor="soc_code" className="text-[#1E1E1E]">
                             SOC Code
                             <TooltipProvider>
                               <Tooltip>
@@ -1132,22 +1185,22 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                             </TooltipProvider>
                           </Label>
                           <Input
-                            id="socCode"
-                            value={formData.socCode}
-                            onChange={(e) => handleInputChange("socCode", e.target.value)}
+                            id="soc_code"
+                            value={formData.soc_code}
+                            onChange={(e) => handleInputChange("soc_code", e.target.value)}
                             className="border-[#E5E5E5]"
                             placeholder="e.g., 15-1252"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="socCodeDescription" className="text-[#1E1E1E]">
+                          <Label htmlFor="soc_code_description" className="text-[#1E1E1E]">
                             SOC Code Description
                           </Label>
                           <Input
-                            id="socCodeDescription"
-                            value={formData.socCodeDescription}
-                            onChange={(e) => handleInputChange("socCodeDescription", e.target.value)}
+                            id="soc_code_description"
+                            value={formData.soc_code_description}
+                            onChange={(e) => handleInputChange("soc_code_description", e.target.value)}
                             className="border-[#E5E5E5]"
                             placeholder="e.g., Software Developers"
                           />
@@ -1156,13 +1209,13 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* General Notes */}
                       <div className="space-y-2">
-                        <Label htmlFor="generalNotes" className="text-[#1E1E1E]">
+                        <Label htmlFor="general_notes" className="text-[#1E1E1E]">
                           General Notes
                         </Label>
                         <Textarea
-                          id="generalNotes"
-                          value={formData.generalNotes}
-                          onChange={(e) => handleInputChange("generalNotes", e.target.value)}
+                          id="general_notes"
+                          value={formData.general_notes}
+                          onChange={(e) => handleInputChange("general_notes", e.target.value)}
                           className="border-[#E5E5E5]"
                           placeholder="Add any additional notes or comments"
                           rows={4}

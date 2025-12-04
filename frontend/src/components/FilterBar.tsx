@@ -11,7 +11,7 @@ interface FilterBarProps {
 
 export function FilterBar({ onFilterChange, onSearchChange }: FilterBarProps) {
   const activeFilters = [
-    { label: "H-1B", type: "visaType" },
+    { label: "H-1B", type: "visa_type" },
     { label: "Engineering", type: "department" },
   ];
 

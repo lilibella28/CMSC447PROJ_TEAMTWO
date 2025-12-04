@@ -84,7 +84,7 @@ export function Dashboard({
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [visaTypeFilter, setVisaTypeFilter] = useState("all");
+  const [visa_typeFilter, setvisa_typeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   // Pagination state
@@ -130,9 +130,9 @@ export function Dashboard({
       visaCase.employee.department === departmentFilter;
 
     // Visa type filter
-    const matchesVisaType =
-      visaTypeFilter === "all" ||
-      visaCase.visaType === visaTypeFilter;
+    const matchesvisa_type =
+      visa_typeFilter === "all" ||
+      visaCase.visa_type === visa_typeFilter;
 
     // Status filter (from dropdown)
     const matchesStatusFilter =
@@ -151,7 +151,7 @@ export function Dashboard({
       matchesStatCard = visaCase.status === "Processing" || visaCase.status === "Pending";
     }
 
-    return matchesSearch && matchesDepartment && matchesVisaType && matchesStatusFilter && matchesStatCard;
+    return matchesSearch && matchesDepartment && matchesvisa_type && matchesStatusFilter && matchesStatCard;
   });
 
   // Get status priority for sorting (lower number = higher priority)
@@ -197,15 +197,15 @@ export function Dashboard({
   // Reset to page 1 when any filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter, searchQuery, departmentFilter, visaTypeFilter, statusFilter]);
+  }, [activeFilter, searchQuery, departmentFilter, visa_typeFilter, statusFilter]);
 
   // Get unique values for filter dropdowns
   const allDepartments = Array.isArray(visaCases) ? Array.from(
     new Set(visaCases.map((vc) => vc.employee.department))
   ).sort() : [];
 
-  const allVisaTypes = Array.isArray(visaCases) ? Array.from(
-    new Set(visaCases.map((vc) => vc.visaType))
+  const allvisa_types = Array.isArray(visaCases) ? Array.from(
+    new Set(visaCases.map((vc) => vc.visa_type))
   ).sort() : [];
 
   // Destructure statistics
@@ -281,20 +281,11 @@ export function Dashboard({
     }
   };
 
-  // Get initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  };
-
+ 
   // Prepare chart data
-  const visaTypeData = Array.isArray(visaCases) ? Object.entries(
+  const visa_typeData = Array.isArray(visaCases) ? Object.entries(
     visaCases.reduce((acc, vc) => {
-      acc[vc.visaType] = (acc[vc.visaType] || 0) + 1;
+      acc[vc.visa_type] = (acc[vc.visa_type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value })) : [];
@@ -470,13 +461,13 @@ export function Dashboard({
               </Select>
 
               {/* Visa Type Filter */}
-              <Select value={visaTypeFilter} onValueChange={setVisaTypeFilter}>
+              <Select value={visa_typeFilter} onValueChange={setvisa_typeFilter}>
                 <SelectTrigger className="w-full lg:w-[180px] h-10 bg-white border-[#E1E1E1] rounded-lg">
                   <SelectValue placeholder="Visa Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Visa Types</SelectItem>
-                  {allVisaTypes.map((type) => (
+                  {allvisa_types.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
@@ -563,7 +554,7 @@ export function Dashboard({
                           {employee.employee.department}
                         </TableCell>
                         <TableCell className="text-sm text-[#4A4A4A]">
-                          {employee.visaType}
+                          {employee.visa_type}
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeStyle(employee.status)}>
@@ -571,7 +562,7 @@ export function Dashboard({
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-[#4A4A4A]">
-                          {new Date(employee.expirationDate).toLocaleDateString('en-US', {
+                          {new Date(employee.expiration_date).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'
@@ -726,7 +717,7 @@ export function Dashboard({
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={visaTypeData}
+                    data={visa_typeData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -735,7 +726,7 @@ export function Dashboard({
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {visaTypeData.map((entry, index) => (
+                    {visa_typeData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

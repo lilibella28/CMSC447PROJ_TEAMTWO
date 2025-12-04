@@ -33,6 +33,10 @@ def create_app():
     from .routes.import_routes import import_bp
     app.register_blueprint(import_bp, url_prefix="/api/excel")
 
+    from backend.app.routes.visa_history_routes import visa_history_bp 
+    app.register_blueprint(visa_history_bp)
+
+
     app.config.from_object(Config)
 
     return app

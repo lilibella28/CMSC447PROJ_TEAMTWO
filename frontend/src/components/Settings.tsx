@@ -1,19 +1,53 @@
 import { useState } from "react";
-import { Card } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
-import { Separator } from "./ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Checkbox } from "./ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "./ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
+  Shield,
+  Users,
+  UserCog,
+  UserPlus,
+  X,
+  Mail,
+  User,
+  Building2,
+  Bell,
+  Globe,
+  Eye,
+  Save,
+  Trash2,
+  Edit,
+  AlertCircle,
+  Lock,
+  Plus,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { toast } from "sonner";
+import { Badge } from "./ui/badge";
+import { getRoleDisplayName, getRoleBadgeColor, UserRole } from "../../utils/roles";
+import { DEMO_USERS } from "./UserSwitcher";
+import { Separator } from "./ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +58,51 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { Mail, Lock, Plus, Trash2, Moon, Sun, Bell } from "lucide-react";
-import { toast } from "sonner";
 
-// Mock admin users data
-const initialAdmins = [
-  { id: "1", name: "Admin User", email: "admin@umbc.edu" },
-  { id: "2", name: "Sarah Johnson", email: "sarah.johnson@umbc.edu" },
-  { id: "3", name: "Michael Chen", email: "michael.chen@umbc.edu" },
+// Mock admin users data with roles
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  assignedEmployees?: string[];
+  employeeProfileId?: string;
+}
+
+const initialAdmins: AdminUser[] = [
+  { id: "1", name: "Sarah Martinez", email: "admin@umbc.edu", role: "administrator" },
+  { id: "2", name: "Michael Chen", email: "assistant@umbc.edu", role: "assistant", assignedEmployees: ["1", "2", "3"] },
+  { id: "3", name: "John Smith", email: "john.smith@umbc.edu", role: "employee", employeeProfileId: "1" },
 ];
+
+// Mock employee data type
+interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+}
+
+// Mock fetch employees function
+const fetchEmployees = async (): Promise<Employee[]> => {
+  return [
+    { id: "1", name: "John Smith", email: "john.smith@umbc.edu", department: "Computer Science" },
+    { id: "2", name: "Maria Garcia", email: "maria.garcia@umbc.edu", department: "Engineering" },
+    { id: "3", name: "David Lee", email: "david.lee@umbc.edu", department: "Biology" },
+  ];
+};
+
+// Helper function to get role description
+const getRoleDescription = (role: UserRole): string => {
+  switch (role) {
+    case 'administrator':
+      return 'Full system access including user management and all employees';
+    case 'assistant':
+      return 'Limited access to assigned employees only';
+    case 'employee':
+      return 'Can only view their own employee profile (read-only)';
+  }
+};
 
 export function Settings() {
   // Account Settings State
@@ -42,9 +112,14 @@ export function Settings() {
   // Admin Management State
   const [admins, setAdmins] = useState(initialAdmins);
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
+  const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
   const [newAdminName, setNewAdminName] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminRole, setNewAdminRole] = useState<UserRole>("administrator");
+  const [newAdminAssignedEmployees, setNewAdminAssignedEmployees] = useState<string[]>([]);
+  const [newAdminEmployeeProfileId, setNewAdminEmployeeProfileId] = useState("");
   const [adminToRemove, setAdminToRemove] = useState<string | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   
   // Preferences State
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -56,6 +131,19 @@ export function Settings() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Load employees for role assignment
+  useState(() => {
+    const loadEmployees = async () => {
+      try {
+        const data = await fetchEmployees();
+        setEmployees(data);
+      } catch (error) {
+        console.error("Error loading employees:", error);
+      }
+    };
+    loadEmployees();
+  });
 
   // Handle Account Settings Save
   const handleSaveAccount = () => {
@@ -93,22 +181,131 @@ export function Settings() {
       toast.error("Please fill in all fields");
       return;
     }
+
+    // Validate role-specific requirements
+    if (newAdminRole === 'assistant' && newAdminAssignedEmployees.length === 0) {
+      toast.error("Assistants must be assigned to at least one employee");
+      return;
+    }
+
+    if (newAdminRole === 'employee') {
+      // Auto-match employee profile by email
+      const matchingEmployee = employees.find(
+        emp => emp.email.toLowerCase() === newAdminEmail.toLowerCase()
+      );
+      
+      if (!matchingEmployee) {
+        toast.error("No employee profile found", {
+          description: `No employee record found with email ${newAdminEmail}. Please ensure the employee exists in the system first.`,
+        });
+        return;
+      }
+    }
     
     const newAdmin = {
       id: String(admins.length + 1),
       name: newAdminName,
       email: newAdminEmail,
+      role: newAdminRole,
+      assignedEmployees: newAdminAssignedEmployees,
+      employeeProfileId: newAdminEmployeeProfileId,
     };
     
     setAdmins([...admins, newAdmin]);
     setNewAdminName("");
     setNewAdminEmail("");
+    setNewAdminRole("administrator");
+    setNewAdminAssignedEmployees([]);
+    setNewAdminEmployeeProfileId("");
     setIsAddAdminOpen(false);
     
-    toast.success("Admin added successfully!", {
-      description: `${newAdminName} has been added as an admin.`,
+    toast.success("User created successfully!", {
+      description: `${newAdminName} has been added as ${getRoleDisplayName(newAdminRole)}.${
+        newAdminRole === 'employee' ? ' They can now log in to view their profile.' : ''
+      }`,
       duration: 3000,
     });
+  };
+
+  // Handle Open Edit Dialog
+  const handleOpenEditAdmin = (adminId: string) => {
+    const admin = admins.find((a) => a.id === adminId);
+    if (!admin) return;
+
+    setEditingAdminId(adminId);
+    setNewAdminName(admin.name);
+    setNewAdminEmail(admin.email);
+    setNewAdminRole(admin.role);
+    setNewAdminAssignedEmployees(admin.assignedEmployees || []);
+    setNewAdminEmployeeProfileId(admin.employeeProfileId || "");
+    setIsAddAdminOpen(true);
+  };
+
+  // Handle Update Admin
+  const handleUpdateAdmin = () => {
+    if (!newAdminName || !newAdminEmail) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    // Validate role-specific requirements
+    if (newAdminRole === 'assistant' && newAdminAssignedEmployees.length === 0) {
+      toast.error("Assistants must be assigned to at least one employee");
+      return;
+    }
+
+    if (newAdminRole === 'employee') {
+      // Auto-match employee profile by email
+      const matchingEmployee = employees.find(
+        emp => emp.email.toLowerCase() === newAdminEmail.toLowerCase()
+      );
+      
+      if (!matchingEmployee) {
+        toast.error("No employee profile found", {
+          description: `No employee record found with email ${newAdminEmail}. Please ensure the employee exists in the system first.`,
+        });
+        return;
+      }
+    }
+
+    const updatedAdmins = admins.map((admin) => {
+      if (admin.id === editingAdminId) {
+        return {
+          ...admin,
+          name: newAdminName,
+          email: newAdminEmail,
+          role: newAdminRole,
+          assignedEmployees: newAdminRole === 'assistant' ? newAdminAssignedEmployees : undefined,
+          employeeProfileId: newAdminRole === 'employee' ? newAdminEmployeeProfileId : undefined,
+        };
+      }
+      return admin;
+    });
+
+    setAdmins(updatedAdmins);
+    setEditingAdminId(null);
+    setNewAdminName("");
+    setNewAdminEmail("");
+    setNewAdminRole("administrator");
+    setNewAdminAssignedEmployees([]);
+    setNewAdminEmployeeProfileId("");
+    setIsAddAdminOpen(false);
+
+    toast.success("User updated successfully!", {
+      description: `${newAdminName}'s account has been updated.`,
+      duration: 3000,
+    });
+  };
+
+  // Handle Close Dialog
+  const handleCloseDialog = () => {
+    setIsAddAdminOpen(false);
+    setEditingAdminId(null);
+    setNewAdminName("");
+    setNewAdminEmail("");
+    setNewAdminRole("administrator");
+    setNewAdminAssignedEmployees([]);
+    setNewAdminEmployeeProfileId("");
   };
 
   // Handle Remove Admin
@@ -302,50 +499,156 @@ export function Settings() {
                     Add New Admin
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Add New Admin</DialogTitle>
+                    <DialogTitle>{editingAdminId ? 'Edit User' : 'Add New User'}</DialogTitle>
                     <DialogDescription>
-                      Enter the details of the new administrator.
+                      {editingAdminId 
+                        ? 'Update user account information, role, and permissions.'
+                        : 'Create a new user account and assign their role and permissions.'
+                      }
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="adminName">Name</Label>
-                      <Input
-                        id="adminName"
-                        value={newAdminName}
-                        onChange={(e) => setNewAdminName(e.target.value)}
-                        placeholder="Enter admin name"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="adminName">Full Name *</Label>
+                        <Input
+                          id="adminName"
+                          value={newAdminName}
+                          onChange={(e) => setNewAdminName(e.target.value)}
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="adminEmail">Email Address *</Label>
+                        <Input
+                          id="adminEmail"
+                          type="email"
+                          value={newAdminEmail}
+                          onChange={(e) => setNewAdminEmail(e.target.value)}
+                          placeholder="john.doe@umbc.edu"
+                        />
+                      </div>
                     </div>
+
+                    {/* Role Selection */}
                     <div className="space-y-2">
-                      <Label htmlFor="adminEmail">Email</Label>
-                      <Input
-                        id="adminEmail"
-                        type="email"
-                        value={newAdminEmail}
-                        onChange={(e) => setNewAdminEmail(e.target.value)}
-                        placeholder="Enter admin email"
-                      />
+                      <Label htmlFor="adminRole">Role *</Label>
+                      <Select
+                        value={newAdminRole}
+                        onValueChange={(value) => {
+                          setNewAdminRole(value as UserRole);
+                          setNewAdminAssignedEmployees([]);
+                          setNewAdminEmployeeProfileId("");
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="administrator">
+                            <div className="flex items-center gap-2">
+                              <Shield className="h-4 w-4 text-[#5B8DEF]" />
+                              <span>UMBC Administrator</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="assistant">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-[#EFB74A]" />
+                              <span>Assistant</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="employee">
+                            <div className="flex items-center gap-2">
+                              <UserCog className="h-4 w-4 text-[#9E9E9E]" />
+                              <span>Employee (Self-View)</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-[#6B7280]">
+                        {getRoleDescription(newAdminRole)}
+                      </p>
                     </div>
+
+                    {/* Assistant-specific: Assign Employees */}
+                    {newAdminRole === 'assistant' && (
+                      <div className="space-y-2">
+                        <Label>Assign Employees *</Label>
+                        <Card className="border-[#E5E5E5] p-4 max-h-[200px] overflow-y-auto">
+                          {employees.length === 0 ? (
+                            <p className="text-sm text-[#6B7280] text-center py-4">
+                              No employees available
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              {employees.map((employee) => (
+                                <div key={employee.id} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`emp-${employee.id}`}
+                                    checked={newAdminAssignedEmployees.includes(employee.id)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setNewAdminAssignedEmployees([...newAdminAssignedEmployees, employee.id]);
+                                      } else {
+                                        setNewAdminAssignedEmployees(
+                                          newAdminAssignedEmployees.filter((id) => id !== employee.id)
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`emp-${employee.id}`}
+                                    className="text-sm cursor-pointer flex-1"
+                                  >
+                                    {employee.name} - {employee.department}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </Card>
+                        <p className="text-xs text-[#6B7280]">
+                          Selected: {newAdminAssignedEmployees.length} {newAdminAssignedEmployees.length === 1 ? 'employee' : 'employees'}
+                          {newAdminAssignedEmployees.length === 0 && ' (minimum 1 required)'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Employee role info - automatic profile linking */}
+                    {newAdminRole === 'employee' && (
+                      <Card className="border-[#5B8DEF] bg-[#E9F2FF] p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-[#5B8DEF] rounded-lg">
+                            <UserCog className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-[#1E1E1E] mb-1">
+                              Automatic Profile Linking
+                            </p>
+                            <p className="text-xs text-[#4A4A4A]">
+                              The system will automatically link this user account to the employee profile with the matching email address. 
+                              Make sure the email you enter matches an existing employee record.
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    )}
                   </div>
                   <DialogFooter>
                     <Button
                       variant="outline"
-                      onClick={() => {
-                        setIsAddAdminOpen(false);
-                        setNewAdminName("");
-                        setNewAdminEmail("");
-                      }}
+                      onClick={handleCloseDialog}
                     >
                       Cancel
                     </Button>
                     <Button
-                      className="bg-black text-[#FFCC00] hover:bg-[#1F1F1F]"
-                      onClick={handleAddAdmin}
+                      className="bg-[#5B8DEF] hover:bg-[#4A7DD8] text-white"
+                      onClick={editingAdminId ? handleUpdateAdmin : handleAddAdmin}
                     >
-                      Add Admin
+                      <Plus className="h-4 w-4 mr-2" />
+                      {editingAdminId ? 'Update User' : 'Create User'}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -361,23 +664,44 @@ export function Settings() {
                   key={admin.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] transition-colors"
                 >
-                  <div className="flex-1">
-                    <p className="text-base font-medium text-black">
-                      {admin.name}
-                    </p>
-                    <p className="text-xs text-[#6B7280] mt-0.5">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <p className="text-base font-medium text-black">
+                        {admin.name}
+                      </p>
+                      <Badge className={getRoleBadgeColor(admin.role)}>
+                        {getRoleDisplayName(admin.role)}
+                      </Badge>
+                      {admin.role === 'assistant' && admin.assignedEmployees && (
+                        <Badge variant="outline" className="border-[#EFB74A] text-[#EFB74A]">
+                          {admin.assignedEmployees.length} employees
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#6B7280]">
                       {admin.email}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-[#EF4444] hover:text-[#DC2626] hover:bg-[#FEF2F2]"
-                    onClick={() => setAdminToRemove(admin.id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Remove
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                      onClick={() => handleOpenEditAdmin(admin.id)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#EF4444] hover:text-[#DC2626] hover:bg-[#FEF2F2]"
+                      onClick={() => setAdminToRemove(admin.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

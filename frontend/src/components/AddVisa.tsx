@@ -30,14 +30,14 @@ import { toast } from "sonner";
 
 export interface VisaHistoryRecord {
   id: string;
-  visaType: string;
+  visa_type: string;
   status: "Active" | "Expired" | "Processing" | "Pending";
-  startDate: string;
-  expirationDate: string;
-  filedBy: "Attorney" | "UMBC Administrator" | "Self-Petition";
-  caseType?: string;
-  i94Number?: string;
-  sevisId?: string;
+  start_date: string;
+  expiration_date: string;
+  filed_by: "Attorney" | "UMBC Administrator" | "Self-Petition";
+  case_type?: string;
+  i94_number?: string;
+  sevis_id?: string;
   comments?: string;
   addedDate: string;
   addedBy: string;
@@ -53,18 +53,18 @@ interface AddVisaProps {
 
 export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: AddVisaProps) {
   const [formData, setFormData] = useState({
-    visaType: currentVisa?.visaType || "",
+    visa_type: currentVisa?.visa_type || "",
     status: currentVisa?.status || "",
-    filedBy: currentVisa?.filedBy || "",
-    caseType: currentVisa?.caseType || "",
-    i94Number: currentVisa?.i94Number || "",
-    sevisId: currentVisa?.sevisId || "",
+    filed_by: currentVisa?.filed_by || "",
+    case_type: currentVisa?.case_type || "",
+   i94_number: currentVisa?.i94_number  || "",
+    sevis_id: currentVisa?.sevis_id || "",
     comments: currentVisa?.comments || "",
   });
 
   const [dates, setDates] = useState({
-    startDate: currentVisa?.startDate ? new Date(currentVisa.startDate) : undefined,
-    expirationDate: currentVisa?.expirationDate ? new Date(currentVisa.expirationDate) : undefined,
+    start_date: currentVisa?.start_date ? new Date(currentVisa.start_date) : undefined,
+    expiration_date: currentVisa?.expiration_date ? new Date(currentVisa.expiration_date) : undefined,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -80,7 +80,7 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
     }
   };
 
-  const handleDateChange = (field: "startDate" | "expirationDate", value: Date | undefined) => {
+  const handleDateChange = (field: "start_date" | "expiration_date", value: Date | undefined) => {
     setDates((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -94,17 +94,17 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.visaType) {
-      newErrors.visaType = "Visa type is required";
+    if (!formData.visa_type) {
+      newErrors.visa_type = "Visa type is required";
     }
     if (!formData.status) {
       newErrors.status = "Status is required";
     }
-    if (!dates.startDate) {
-      newErrors.startDate = "Start date is required";
+    if (!dates.start_date) {
+      newErrors.start_date = "Start date is required";
     }
-    if (!dates.expirationDate) {
-      newErrors.expirationDate = "Expiration date is required";
+    if (!dates.expiration_date) {
+      newErrors.expiration_date = "Expiration date is required";
     }
 
     setErrors(newErrors);
@@ -117,14 +117,14 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
     if (validateForm()) {
       const visaRecord: VisaHistoryRecord = {
         id: currentVisa?.id || Date.now().toString(),
-        visaType: formData.visaType,
+        visa_type: formData.visa_type,
         status: formData.status as any,
-        startDate: dates.startDate ? format(dates.startDate, "yyyy-MM-dd") : "",
-        expirationDate: dates.expirationDate ? format(dates.expirationDate, "yyyy-MM-dd") : "",
-        filedBy: formData.filedBy as any,
-        caseType: formData.caseType || undefined,
-        i94Number: formData.i94Number || undefined,
-        sevisId: formData.sevisId || undefined,
+        start_date: dates.start_date ? format(dates.start_date, "yyyy-MM-dd") : "",
+        expiration_date: dates.expiration_date ? format(dates.expiration_date, "yyyy-MM-dd") : "",
+        filed_by: formData.filed_by as any,
+        case_type: formData.case_type || undefined,
+       i94_number: formData.i94_number  || undefined,
+        sevis_id: formData.sevis_id || undefined,
         comments: formData.comments || undefined,
         addedDate: new Date().toISOString(),
         addedBy: "Current Admin", // In production, this would come from auth context
@@ -141,24 +141,29 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
   const handleClose = () => {
     // Reset form
     setFormData({
-      visaType: "",
+      visa_type: "",
       status: "",
-      filedBy: "",
-      caseType: "",
-      i94Number: "",
-      sevisId: "",
+      filed_by: "",
+      case_type: "",
+     i94_number: "",
+      sevis_id: "",
       comments: "",
     });
     setDates({
-      startDate: undefined,
-      expirationDate: undefined,
+      start_date: undefined,
+      expiration_date: undefined,
     });
     setErrors({});
     onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog
+    open={open}
+    onOpenChange={(isOpen: boolean) => {
+      if (!isOpen) handleClose();
+    }}
+  >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-[#1E1E1E]">
@@ -176,14 +181,14 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Visa Type */}
             <div className="space-y-2">
-              <Label htmlFor="visaType" className="text-[#1E1E1E]">
+              <Label htmlFor="visa_type" className="text-[#1E1E1E]">
                 Visa Type <span className="text-[#DC2626]">*</span>
               </Label>
               <Select
-                value={formData.visaType}
-                onValueChange={(value) => handleInputChange("visaType", value)}
+                value={formData.visa_type}
+                onValueChange={(value) => handleInputChange("visa_type", value)}
               >
-                <SelectTrigger className={`border-[#E5E5E5] ${errors.visaType ? "border-[#DC2626]" : ""}`}>
+                <SelectTrigger className={`border-[#E5E5E5] ${errors.visa_type ? "border-[#DC2626]" : ""}`}>
                   <SelectValue placeholder="Select visa type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -194,8 +199,8 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
                   <SelectItem value="Permanent Resident">Permanent Resident</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.visaType && (
-                <p className="text-sm text-[#DC2626]">{errors.visaType}</p>
+              {errors.visa_type && (
+                <p className="text-sm text-[#DC2626]">{errors.visa_type}</p>
               )}
             </div>
 
@@ -233,12 +238,12 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
                   <Button
                     variant="outline"
                     className={`w-full justify-start text-left border-[#E5E5E5] ${
-                      errors.startDate ? "border-[#DC2626]" : ""
+                      errors.start_date ? "border-[#DC2626]" : ""
                     }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                    {dates.startDate ? (
-                      format(dates.startDate, "MMM dd, yyyy")
+                    {dates.start_date ? (
+                      format(dates.start_date, "MMM dd, yyyy")
                     ) : (
                       <span className="text-[#9CA3AF]">Pick a date</span>
                     )}
@@ -247,14 +252,14 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={dates.startDate}
-                    onSelect={(date) => handleDateChange("startDate", date)}
+                    selected={dates.start_date}
+                    onSelect={(date) => handleDateChange("start_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
-              {errors.startDate && (
-                <p className="text-sm text-[#DC2626]">{errors.startDate}</p>
+              {errors.start_date && (
+                <p className="text-sm text-[#DC2626]">{errors.start_date}</p>
               )}
             </div>
 
@@ -268,12 +273,12 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
                   <Button
                     variant="outline"
                     className={`w-full justify-start text-left border-[#E5E5E5] ${
-                      errors.expirationDate ? "border-[#DC2626]" : ""
+                      errors.expiration_date ? "border-[#DC2626]" : ""
                     }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 text-[#6B7280]" />
-                    {dates.expirationDate ? (
-                      format(dates.expirationDate, "MMM dd, yyyy")
+                    {dates.expiration_date ? (
+                      format(dates.expiration_date, "MMM dd, yyyy")
                     ) : (
                       <span className="text-[#9CA3AF]">Pick a date</span>
                     )}
@@ -282,23 +287,23 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={dates.expirationDate}
-                    onSelect={(date) => handleDateChange("expirationDate", date)}
+                    selected={dates.expiration_date}
+                    onSelect={(date) => handleDateChange("expiration_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
-              {errors.expirationDate && (
-                <p className="text-sm text-[#DC2626]">{errors.expirationDate}</p>
+              {errors.expiration_date && (
+                <p className="text-sm text-[#DC2626]">{errors.expiration_date}</p>
               )}
             </div>
 
             {/* Filed By */}
             <div className="space-y-2">
-              <Label htmlFor="filedBy" className="text-[#1E1E1E]">Filed By</Label>
+              <Label htmlFor="filed_by" className="text-[#1E1E1E]">Filed By</Label>
               <Select
-                value={formData.filedBy}
-                onValueChange={(value) => handleInputChange("filedBy", value)}
+                value={formData.filed_by}
+                onValueChange={(value) => handleInputChange("filed_by", value)}
               >
                 <SelectTrigger className="border-[#E5E5E5]">
                   <SelectValue placeholder="Select who filed" />
@@ -313,11 +318,11 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
 
             {/* Case Type */}
             <div className="space-y-2">
-              <Label htmlFor="caseType" className="text-[#1E1E1E]">Case Type</Label>
+              <Label htmlFor="case_type" className="text-[#1E1E1E]">Case Type</Label>
               <Input
-                id="caseType"
-                value={formData.caseType}
-                onChange={(e) => handleInputChange("caseType", e.target.value)}
+                id="case_type"
+                value={formData.case_type}
+                onChange={(e) => handleInputChange("case_type", e.target.value)}
                 className="border-[#E5E5E5]"
                 placeholder="e.g., H-1B Extension, Initial COS"
               />
@@ -325,11 +330,11 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
 
             {/* I-94 Number */}
             <div className="space-y-2">
-              <Label htmlFor="i94Number" className="text-[#1E1E1E]">I-94 Number</Label>
+              <Label htmlFor="i94_number " className="text-[#1E1E1E]">I-94 Number</Label>
               <Input
-                id="i94Number"
-                value={formData.i94Number}
-                onChange={(e) => handleInputChange("i94Number", e.target.value)}
+                id="i94_number "
+                value={formData.i94_number }
+                onChange={(e) => handleInputChange("i94_number ", e.target.value)}
                 className="border-[#E5E5E5]"
                 placeholder="Enter I-94 number"
               />
@@ -337,11 +342,11 @@ export function AddVisa({ open, onClose, onSave, employeeName, currentVisa }: Ad
 
             {/* SEVIS ID */}
             <div className="space-y-2">
-              <Label htmlFor="sevisId" className="text-[#1E1E1E]">SEVIS ID</Label>
+              <Label htmlFor="sevis_id" className="text-[#1E1E1E]">SEVIS ID</Label>
               <Input
-                id="sevisId"
-                value={formData.sevisId}
-                onChange={(e) => handleInputChange("sevisId", e.target.value)}
+                id="sevis_id"
+                value={formData.sevis_id}
+                onChange={(e) => handleInputChange("sevis_id", e.target.value)}
                 className="border-[#E5E5E5]"
                 placeholder="Enter SEVIS ID"
               />

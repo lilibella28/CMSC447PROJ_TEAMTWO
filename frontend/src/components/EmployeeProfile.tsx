@@ -1,10 +1,17 @@
-
+import { ArrowLeft, Edit, Plus, Calendar, Mail, Phone, User, Briefcase, DollarSign, TrendingUp, Users, FileText, AlertCircle, CheckCircle, Clock, Globe, GraduationCap, FileCheck, ChevronDown, ChevronUp, HelpCircle, History, Filter, Trash2, X, Save } from "lucide-react";
+import { VisaCase, Employee, fetchEmployeeById, Dependent, PendingVisaApplication, fetchVisaHistory, addVisaHistory, VisaHistoryRecord as APIVisaHistoryRecord } from "../../utils/dataService";
+import { AddVisa, VisaHistoryRecord } from "./AddVisa";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { formatDate, formatDateWithFallback, isMissingDate, getMissingDateTooltip } from "../../utils/dateUtils";
 import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
+import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,17 +23,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { ArrowLeft, Edit, Plus, Calendar, Mail, Phone, User, Briefcase, DollarSign, TrendingUp, Users, FileText, AlertCircle, CheckCircle, Clock, Globe, GraduationCap, FileCheck, ChevronDown, ChevronUp, HelpCircle, History } from "lucide-react";
-import { VisaCase, Employee, fetchEmployeeById, Dependent, PendingVisaApplication } from "../../utils/dataService";
-import { AddVisa, VisaHistoryRecord } from "./AddVisa";
-import { format } from "date-fns";
 
 interface VisaHistory {
   id: string;
-  visaType: string;
+  visa_type: string;
   status: "Active" | "Expired" | "Processing";
-  startDate: string;
-  expirationDate: string;
+  start_date : string;
+  expiration_date: string;
   comments?: string;
   addedDate?: string;
   addedBy?: string;
@@ -37,6 +40,7 @@ interface CaseNote {
   date: string;
   author: string;
   note: string;
+  noteType: "General" | "Permanent Resident";
 }
 
 interface EmployeeProfileProps {
@@ -48,22 +52,16 @@ interface EmployeeProfileProps {
 export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfileProps) {
   const [fullEmployeeData, setFullEmployeeData] = useState<Employee | null>(null);
   const [notes, setNotes] = useState<CaseNote[]>([
-    {
-      id: "1",
-      date: "2024-10-15 10:30 AM",
-      author: "Sarah Johnson",
-      note: "Initial visa application submitted. Awaiting approval from immigration office.",
-    },
-    {
-      id: "2",
-      date: "2024-09-20 2:15 PM",
-      author: "Michael Chen",
-      note: "Documents verified and sent to legal team for review.",
-    },
+   
   ]);
 
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [newNote, setNewNote] = useState("");
+  const [newNoteType, setNewNoteType] = useState<"General" | "Permanent Resident">("General");
+  const [noteFilter, setNoteFilter] = useState<"All" | "General" | "Permanent Resident">("All");
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editNoteText, setEditNoteText] = useState("");
+  const [editNoteType, setEditNoteType] = useState<"General" | "Permanent Resident">("General");
   const [showAddVisaDialog, setShowAddVisaDialog] = useState(false);
   const [openSections, setOpenSections] = useState({
     personal: true,
@@ -86,29 +84,43 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
     loadEmployeeData();
   }, [employee.id]);
 
-  // Visa history state - in real app, this would come from backend
-  const [visaHistory, setVisaHistory] = useState<VisaHistory[]>([
-    {
-      id: "1",
-      visaType: employee.visaType,
-      status: employee.status,
-      startDate: "2022-01-15",
-      expirationDate: employee.expirationDate,
-      comments: "Current active visa",
-      addedDate: "2022-01-10T10:30:00Z",
-      addedBy: "Sarah Johnson",
-    },
-    {
-      id: "2",
-      visaType: "F-1",
-      status: "Expired",
-      startDate: "2020-08-20",
-      expirationDate: "2022-01-14",
-      comments: "Previous student visa - transitioned to work authorization",
-      addedDate: "2020-08-15T14:20:00Z",
-      addedBy: "Michael Chen",
-    },
-  ]);
+  // Visa history state - fetched from backend
+  const [visaHistory, setVisaHistory] = useState<VisaHistory[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  // Fetch visa history from backend
+  useEffect(() => {
+    const loadVisaHistory = async () => {
+      try {
+        setIsLoadingHistory(true);
+        console.log('📋 Fetching visa history for employee:', employee.id);
+        const history = await fetchVisaHistory(parseInt(employee.id));
+        
+        // Convert API format to component format
+        const formattedHistory: VisaHistory[] = history.map(record => ({
+          id: record.id.toString(),
+          visa_type: record.visa_type,
+          status: record.status as "Active" | "Expired" | "Processing",
+          start_date : record.start_date,
+          expiration_date: record.expiration_date,
+          comments: record.comments,
+          addedDate: record.added_at,
+          addedBy: record.added_by,
+        }));
+        
+        console.log('✅ Loaded visa history:', formattedHistory.length, 'records');
+        setVisaHistory(formattedHistory);
+      } catch (error) {
+        console.error("❌ Error loading visa history:", error);
+        // Set empty array on error
+        setVisaHistory([]);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+    
+    loadVisaHistory();
+  }, [employee.id]);
 
   const handleAddNote = () => {
     if (newNote.trim()) {
@@ -123,30 +135,101 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
         }),
         author: "Current Admin",
         note: newNote,
+        noteType: newNoteType,
       };
       setNotes([note, ...notes]);
       setNewNote("");
+      setNewNoteType("General");
       setShowNoteInput(false);
+      toast.success("Note added successfully");
     }
   };
 
-  const handleSaveVisa = (visaData: VisaHistoryRecord) => {
-    const newVisaHistory: VisaHistory = {
-      id: visaData.id,
-      visaType: visaData.visaType,
-      status: visaData.status,
-      startDate: visaData.startDate,
-      expirationDate: visaData.expirationDate,
-      comments: visaData.comments,
-      addedDate: visaData.addedDate,
-      addedBy: visaData.addedBy,
-    };
-    
-    // Add to beginning of visa history (most recent first)
-    setVisaHistory([newVisaHistory, ...visaHistory]);
-    
-    // In production, you would also update the backend here
-    console.log("New visa record saved:", visaData);
+  const handleEditNote = (noteId: string) => {
+    const noteToEdit = notes.find(n => n.id === noteId);
+    if (noteToEdit) {
+      setEditingNoteId(noteId);
+      setEditNoteText(noteToEdit.note);
+      setEditNoteType(noteToEdit.noteType);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editNoteText.trim() && editingNoteId) {
+      setNotes(notes.map(note => 
+        note.id === editingNoteId 
+          ? { ...note, note: editNoteText, noteType: editNoteType }
+          : note
+      ));
+      setEditingNoteId(null);
+      setEditNoteText("");
+      setEditNoteType("General");
+      toast.success("Note updated successfully");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditNoteText("");
+    setEditNoteType("General");
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    const noteToDelete = notes.find(n => n.id === noteId);
+    if (noteToDelete && confirm(`Are you sure you want to delete this ${noteToDelete.noteType.toLowerCase()} note?`)) {
+      setNotes(notes.filter(note => note.id !== noteId));
+      toast.success("Note deleted successfully");
+    }
+  };
+
+  const handleSaveVisa = async (visaData: VisaHistoryRecord) => {
+    try {
+      console.log('💾 Saving new visa history record:', visaData);
+      
+      // Call backend API to save visa history
+      const result = await addVisaHistory(parseInt(employee.id), {
+        visa_type: visaData.visa_type,
+        status: visaData.status,
+        start_date: visaData.start_date ,
+        expiration_date: visaData.expiration_date,
+        comments: visaData.comments || '',
+        added_by: visaData.addedBy,
+        is_current: false, // You can make this configurable if needed
+      });
+      
+      if (result.success && result.visa_history) {
+        // Convert API response to component format
+        const newVisaHistory: VisaHistory = {
+          id: result.visa_history.id.toString(),
+          visa_type: result.visa_history.visa_type,
+          status: result.visa_history.status as "Active" | "Expired" | "Processing",
+          start_date : result.visa_history.start_date,
+          expiration_date: result.visa_history.expiration_date,
+          comments: result.visa_history.comments,
+          addedDate: result.visa_history.added_at,
+          addedBy: result.visa_history.added_by,
+        };
+        
+        // Add to beginning of visa history (most recent first)
+        setVisaHistory([newVisaHistory, ...visaHistory]);
+        
+        console.log('✅ Visa history record saved successfully');
+        
+        // Show success toast
+        toast.success("Visa record added successfully!", {
+          description: `${visaData.visa_type} visa has been added to history`,
+        });
+      } else {
+        throw new Error(result.error || 'Failed to save visa history');
+      }
+    } catch (error) {
+      console.error("❌ Error saving visa history:", error);
+      
+      // Show error toast
+      toast.error("Failed to save visa record", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    }
   };
 
   const getStatusVariant = (status: string) => {
@@ -181,12 +264,12 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
     </TooltipProvider>
   );
 
-  // // Mock additional employee data
+  // Mock additional employee data
   const employeeDetails = {
     email: fullEmployeeData?.email || `${employee.employee.name.toLowerCase().replace(/\s+/g, ".")}@umbc.edu`,
     employeeId: `EMP-${employee.id.padStart(5, "0")}`,
     jobTitle: fullEmployeeData?.employeeTitle || "Software Engineer",
-    startDate: fullEmployeeData?.startDate || "2022-01-15",
+    start_date : fullEmployeeData?.start_date  || "2022-01-15",
     manager: fullEmployeeData?.departmentAdvisor || "Dr. Robert Smith",
     phone: fullEmployeeData?.phone || "+1 (410) 555-0123",
   };
@@ -281,9 +364,9 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     Pending Visa Application
                   </h3>
                   <p className="text-sm text-[#6B7280] mt-1">
-                    Transitioning from {employee.visaType} to{" "}
+                    Transitioning from {employee.visa_type} to{" "}
                     <span className="font-medium text-black">
-                      {fullEmployeeData.pendingVisaApplication.targetVisaType}
+                      {fullEmployeeData.pendingVisaApplication.targetVisa_type}
                     </span>
                   </p>
                 </div>
@@ -310,24 +393,34 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div>
                   <label className="text-xs text-[#6B7280]">Application Filed</label>
-                  <p className="text-sm text-black mt-1 font-medium">
-                    {new Date(fullEmployeeData.pendingVisaApplication.applicationDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className={`text-sm mt-1 font-medium ${isMissingDate(fullEmployeeData.pendingVisaApplication.applicationDate) ? 'text-[#D86464]' : 'text-black'}`}>
+                        {formatDate(fullEmployeeData.pendingVisaApplication.applicationDate)}
+                      </p>
+                    </TooltipTrigger>
+                    {isMissingDate(fullEmployeeData.pendingVisaApplication.applicationDate) && (
+                      <TooltipContent>
+                        <p>{getMissingDateTooltip()}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                 </div>
                 {fullEmployeeData.pendingVisaApplication.expectedDecisionDate && (
                   <div>
                     <label className="text-xs text-[#6B7280]">Expected Decision</label>
-                    <p className="text-sm text-black mt-1 font-medium">
-                      {new Date(fullEmployeeData.pendingVisaApplication.expectedDecisionDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className={`text-sm mt-1 font-medium ${isMissingDate(fullEmployeeData.pendingVisaApplication.expectedDecisionDate) ? 'text-[#D86464]' : 'text-black'}`}>
+                          {formatDate(fullEmployeeData.pendingVisaApplication.expectedDecisionDate)}
+                        </p>
+                      </TooltipTrigger>
+                      {isMissingDate(fullEmployeeData.pendingVisaApplication.expectedDecisionDate) && (
+                        <TooltipContent>
+                          <p>{getMissingDateTooltip()}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   </div>
                 )}
                 <div>
@@ -428,10 +521,10 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     <p className="text-black mt-1">{fullEmployeeData.nationality}</p>
                   </div>
                 )}
-                {fullEmployeeData?.citizenship && fullEmployeeData.citizenship.length > 0 && (
+                {fullEmployeeData?.citizenships && fullEmployeeData.citizenships.length > 0 && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Citizenship(s)</label>
-                    <p className="text-black mt-1">{fullEmployeeData.citizenship.join(", ")}</p>
+                    <p className="text-black mt-1">{fullEmployeeData.citizenships.join(", ")}</p>
                   </div>
                 )}
                 {fullEmployeeData?.dateOfBirth && (
@@ -531,7 +624,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                   <label className="text-sm text-[#6B7280]">Start Date</label>
                   <p className="text-black mt-1 flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-[#6B7280]" />
-                    {employeeDetails.startDate}
+                    {employeeDetails.start_date }
                   </p>
                 </div>
                 {fullEmployeeData?.annualSalary && (
@@ -574,7 +667,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                   <div>
                     <label className="text-sm text-[#6B7280]">Visa Type</label>
-                    <p className="text-black mt-1 font-medium">{employee.visaType}</p>
+                    <p className="text-black mt-1 font-medium">{employee.visa_type}</p>
                   </div>
                   <div>
                     <label className="text-sm text-[#6B7280]">Filed By</label>
@@ -588,16 +681,49 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                   )}
                   <div>
                     <label className="text-sm text-[#6B7280]">Start Date</label>
-                    <p className="text-black mt-1">{employee.visaStartDate}</p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className={`text-black mt-1 ${isMissingDate(employee.visaStartDate) ? 'text-[#D86464] font-medium' : ''}`}>
+                          {formatDateWithFallback(employee.visaStartDate)}
+                        </p>
+                      </TooltipTrigger>
+                      {isMissingDate(employee.visaStartDate) && (
+                        <TooltipContent>
+                          <p>{getMissingDateTooltip()}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   </div>
                   <div>
                     <label className="text-sm text-[#6B7280]">Expiration Date</label>
-                    <p className="text-black mt-1">{employee.expirationDate}</p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className={`text-black mt-1 ${isMissingDate(employee.expiration_date) ? 'text-[#D86464] font-medium' : ''}`}>
+                          {formatDateWithFallback(employee.expiration_date)}
+                        </p>
+                      </TooltipTrigger>
+                      {isMissingDate(employee.expiration_date) && (
+                        <TooltipContent>
+                          <p>{getMissingDateTooltip()}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   </div>
                   {fullEmployeeData?.initialH1BStartDate && (
                     <div>
                       <label className="text-sm text-[#6B7280]">Initial H-1B Start Date</label>
-                      <p className="text-black mt-1">{fullEmployeeData.initialH1BStartDate}</p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className={`text-black mt-1 ${isMissingDate(fullEmployeeData.initialH1BStartDate) ? 'text-[#D86464] font-medium' : ''}`}>
+                            {formatDateWithFallback(fullEmployeeData.initialH1BStartDate)}
+                          </p>
+                        </TooltipTrigger>
+                        {isMissingDate(fullEmployeeData.initialH1BStartDate) && (
+                          <TooltipContent>
+                            <p>{getMissingDateTooltip()}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                     </div>
                   )}
                   {fullEmployeeData?.prepExtensionDate && (
@@ -606,7 +732,18 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                         Prep Extension Date
                         <HelpTooltip text="Reminder date for when to begin preparing visa extension" />
                       </label>
-                      <p className="text-black mt-1">{fullEmployeeData.prepExtensionDate}</p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className={`text-black mt-1 ${isMissingDate(fullEmployeeData.prepExtensionDate) ? 'text-[#D86464] font-medium' : ''}`}>
+                            {formatDateWithFallback(fullEmployeeData.prepExtensionDate)}
+                          </p>
+                        </TooltipTrigger>
+                        {isMissingDate(fullEmployeeData.prepExtensionDate) && (
+                          <TooltipContent>
+                            <p>{getMissingDateTooltip()}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                     </div>
                   )}
                   {fullEmployeeData?.maxHPeriod && (
@@ -711,7 +848,12 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                   </Button>
                 </div>
                 <div className="space-y-4">
-                  {visaHistory.length === 0 ? (
+                  {isLoadingHistory ? (
+                    <div className="text-center py-8 text-[#6B7280]">
+                      <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>Loading visa history...</p>
+                    </div>
+                  ) : visaHistory.length === 0 ? (
                     <div className="text-center py-8 text-[#6B7280]">
                       <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
                       <p>No visa history records yet</p>
@@ -724,7 +866,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                         <div className="space-y-3">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h3 className="font-medium text-black">{visa.visaType}</h3>
+                              <h3 className="font-medium text-black">{visa.visa_type}</h3>
                               <Badge variant={getStatusVariant(visa.status)} className="mt-1">
                                 {visa.status}
                               </Badge>
@@ -739,11 +881,33 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
                               <label className="text-[#6B7280]">Start Date</label>
-                              <p className="text-black mt-1">{format(new Date(visa.startDate), "MMM dd, yyyy")}</p>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className={`mt-1 ${isMissingDate(visa.start_date ) ? 'text-[#D86464] font-medium' : 'text-black'}`}>
+                                    {formatDateWithFallback(visa.start_date , "— Missing —")}
+                                  </p>
+                                </TooltipTrigger>
+                                {isMissingDate(visa.start_date ) && (
+                                  <TooltipContent>
+                                    <p>{getMissingDateTooltip()}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
                             </div>
                             <div>
                               <label className="text-[#6B7280]">Expiration Date</label>
-                              <p className="text-black mt-1">{format(new Date(visa.expirationDate), "MMM dd, yyyy")}</p>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className={`mt-1 ${isMissingDate(visa.expiration_date) ? 'text-[#D86464] font-medium' : 'text-black'}`}>
+                                    {formatDateWithFallback(visa.expiration_date, "— Missing —")}
+                                  </p>
+                                </TooltipTrigger>
+                                {isMissingDate(visa.expiration_date) && (
+                                  <TooltipContent>
+                                    <p>{getMissingDateTooltip()}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
                             </div>
                             {visa.comments && (
                               <div className="md:col-span-2">
@@ -1022,11 +1186,54 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
       <Card className="p-6 border border-[#E5E7EB]">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-black">Case Notes</h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={noteFilter === "All" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setNoteFilter("All")}
+              className={noteFilter === "All" ? "bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90" : ""}
+            >
+              All ({notes.length})
+            </Button>
+            <Button
+              variant={noteFilter === "General" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setNoteFilter("General")}
+              className={noteFilter === "General" ? "bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90" : ""}
+            >
+              General ({notes.filter(n => n.noteType === "General").length})
+            </Button>
+            <Button
+              variant={noteFilter === "Permanent Resident" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setNoteFilter("Permanent Resident")}
+              className={noteFilter === "Permanent Resident" ? "bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90" : ""}
+            >
+              PR ({notes.filter(n => n.noteType === "Permanent Resident").length})
+            </Button>
+          </div>
         </div>
 
         {/* Add Note Input */}
         {showNoteInput && (
           <div className="mb-4 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
+            <div className="mb-3">
+              <Label className="text-sm text-[#6B7280] mb-2 block">Note Type</Label>
+              <RadioGroup
+                value={newNoteType}
+                onValueChange={(value) => setNewNoteType(value as "General" | "Permanent Resident")}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="General" id="type-general" />
+                  <Label htmlFor="type-general" className="cursor-pointer">General Note</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Permanent Resident" id="type-pr" />
+                  <Label htmlFor="type-pr" className="cursor-pointer">Permanent Resident Note</Label>
+                </div>
+              </RadioGroup>
+            </div>
             <Textarea
               placeholder="Enter your note here..."
               value={newNote}
@@ -1048,6 +1255,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                 onClick={() => {
                   setShowNoteInput(false);
                   setNewNote("");
+                  setNewNoteType("General");
                 }}
               >
                 Cancel
@@ -1058,18 +1266,121 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
 
         {/* Notes List */}
         <div className="space-y-4">
-          {notes.map((note, index) => (
+          {notes
+            .filter(note => noteFilter === "All" || note.noteType === noteFilter)
+            .map((note, index) => (
             <div key={note.id}>
               {index > 0 && <Separator className="my-4" />}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-black">{note.author}</span>
-                  <span className="text-sm text-[#6B7280]">{note.date}</span>
+              {editingNoteId === note.id ? (
+                // Edit Mode
+                <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
+                  <div className="mb-3">
+                    <Label className="text-sm text-[#6B7280] mb-2 block">Note Type</Label>
+                    <RadioGroup
+                      value={editNoteType}
+                      onValueChange={(value) => setEditNoteType(value as "General" | "Permanent Resident")}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="General" id="edit-type-general" />
+                        <Label htmlFor="edit-type-general" className="cursor-pointer">General Note</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Permanent Resident" id="edit-type-pr" />
+                        <Label htmlFor="edit-type-pr" className="cursor-pointer">Permanent Resident Note</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  <Textarea
+                    value={editNoteText}
+                    onChange={(e) => setEditNoteText(e.target.value)}
+                    className="mb-2 bg-white"
+                    rows={4}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90"
+                      onClick={handleSaveEdit}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-sm text-[#374151]">{note.note}</p>
-              </div>
+              ) : (
+                // View Mode
+                <div className="space-y-2 group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-black">{note.author}</span>
+                      <Badge 
+                        variant={note.noteType === "Permanent Resident" ? "default" : "secondary"}
+                        className={note.noteType === "Permanent Resident" ? "bg-blue-500" : ""}
+                      >
+                        {note.noteType === "Permanent Resident" ? "PR" : "General"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[#6B7280]">{note.date}</span>
+                      <div className="flex items-center gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditNote(note.id)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="h-4 w-4 text-[#6B7280] hover:text-black" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit note</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteNote(note.id)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete note</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-[#374151]">{note.note}</p>
+                </div>
+              )}
             </div>
           ))}
+          {notes.filter(note => noteFilter === "All" || note.noteType === noteFilter).length === 0 && (
+            <div className="text-center py-8 text-[#6B7280]">
+              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>No {noteFilter !== "All" ? noteFilter.toLowerCase() : ""} notes yet</p>
+              <p className="text-sm mt-1">Click "Add Note" to create the first note</p>
+            </div>
+          )}
         </div>
       </Card>
 

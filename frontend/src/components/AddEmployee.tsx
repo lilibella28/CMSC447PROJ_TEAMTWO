@@ -41,46 +41,46 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
     first_name: "",
     last_name: "",
     email: "", // UMBC Email
-    personalEmail: "",
+    personal_email: "",
     gender: "",
-    countryOfBirth: "",
+    country_of_birth: "",
     citizenship: "",
     // Employment Information
     department: "",
-    employeeTitle: "",
-    departmentAdmin: "",
-    departmentAdvisor: "",
-    annualSalary: "",
+    employee_title: "",
+    department_admin: "",
+    department_advisor: "",
+   annual_salary: "",
     // Visa & Immigration
-    visaType: "",
+    visa_type: "",
     status: "",
-    filedBy: "",
-    caseType: "",
-    i94Number: "",
-    sevisId: "",
+    filed_by: "",
+    case_type: "",
+   i94_number: "",
+    sevis_id: "",
     // Permanent Residency
-    prFilingDate: "",
-    prStatus: "",
-    prNotes: "",
+    pr_filing_date: "",
+    pr_status: "",
+    pr_notes: "",
     // Education
-    highestEducation: "",
-    fieldOfStudy: "",
+    highest_education: "",
+    field_of_study: "",
     // Administrative
-    socCode: "",
-    socCodeDescription: "",
-    generalNotes: "",
-    // Dependents
-    numberOfDependents: "0",
+    soc_code: "",
+    soc_code_description: "",
+    general_notes: "",
+    // number_of_dependents
+    number_of_dependents : "0",
   });
 
   const [dates, setDates] = useState({
-    expirationDate: undefined as Date | undefined,
-    visaStartDate: undefined as Date | undefined,
-    initialH1BStartDate: undefined as Date | undefined,
-    prepExtensionDate: undefined as Date | undefined,
-    maxHPeriod: undefined as Date | undefined,
-    i94ExpiryDate: undefined as Date | undefined,
-    prFilingDate: undefined as Date | undefined,
+    expiration_date: undefined as Date | undefined,
+    visa_start_date: undefined as Date | undefined,
+    initial_h1b_start_date: undefined as Date | undefined,
+    prep_extension_date : undefined as Date | undefined,
+    max_h_period: undefined as Date | undefined,
+    i94_expiry_date: undefined as Date | undefined,
+    pr_filing_date: undefined as Date | undefined,
   });
 
   const [openSections, setOpenSections] = useState({
@@ -130,11 +130,11 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
     if (!formData.department) {
       newErrors.department = "Department is required";
     }
-    if (!formData.visaType) {
-      newErrors.visaType = "Visa type is required";
+    if (!formData.visa_type) {
+      newErrors.visa_type = "Visa type is required";
     }
-    if (!dates.expirationDate) {
-      newErrors.expirationDate = "Expiration date is required";
+    if (!dates.expiration_date) {
+      newErrors.expiration_date = "Expiration date is required";
     }
 
     setErrors(newErrors);
@@ -148,9 +148,9 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(employeeData),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         console.log("✅ Employee created successfully:", result);
         alert("Employee added successfully!");
@@ -163,7 +163,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
       alert("Network error. Please check your backend connection.");
     }
   };
-  
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,17 +172,17 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
       const employeeData = {
         ...formData,
         citizenship: formData.citizenship ? formData.citizenship.split(",").map(c => c.trim()) : [],
-        annualSalary: formData.annualSalary ? parseFloat(formData.annualSalary) : undefined,
-        numberOfDependents: parseInt(formData.numberOfDependents) || 0,
-        expirationDate: dates.expirationDate ? format(dates.expirationDate, "yyyy-MM-dd") : null,
-        visaStartDate: dates.visaStartDate ? format(dates.visaStartDate, "yyyy-MM-dd") : null,
-        initialH1BStartDate: dates.initialH1BStartDate ? format(dates.initialH1BStartDate, "yyyy-MM-dd") : null,
-        prepExtensionDate: dates.prepExtensionDate ? format(dates.prepExtensionDate, "yyyy-MM-dd") : null,
-        maxHPeriod: dates.maxHPeriod ? format(dates.maxHPeriod, "yyyy-MM-dd") : null,
-        i94ExpiryDate: dates.i94ExpiryDate ? format(dates.i94ExpiryDate, "yyyy-MM-dd") : null,
-        prFilingDate: dates.prFilingDate ? format(dates.prFilingDate, "yyyy-MM-dd") : null,
+       annual_salary: formData.annual_salary ? parseFloat(formData.annual_salary) : undefined,
+        number_of_dependents : parseInt(formData.number_of_dependents ) || 0,
+        expiration_date: dates.expiration_date ? format(dates.expiration_date, "yyyy-MM-dd") : null,
+        visa_start_date: dates.visa_start_date ? format(dates.visa_start_date, "yyyy-MM-dd") : null,
+        initial_h1b_start_date: dates.initial_h1b_start_date ? format(dates.initial_h1b_start_date, "yyyy-MM-dd") : null,
+        prep_extension_date : dates.prep_extension_date  ? format(dates.prep_extension_date , "yyyy-MM-dd") : null,
+        max_h_period: dates.max_h_period ? format(dates.max_h_period, "yyyy-MM-dd") : null,
+        i94_expiry_date: dates.i94_expiry_date ? format(dates.i94_expiry_date, "yyyy-MM-dd") : null,
+        pr_filing_date: dates.pr_filing_date ? format(dates.pr_filing_date, "yyyy-MM-dd") : null,
       };
-      handleSave(employeeData); 
+      handleSave(employeeData);
     }
   };
 
@@ -220,9 +220,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={`w-full h-11 justify-start text-left rounded-lg border-2 bg-[#F6F6F6] hover:bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-              error ? "border-[#EF4444]" : "border-[#E5E7EB]"
-            } ${!value && "text-[#9CA3AF]"}`}
+            className={`w-full h-11 justify-start text-left rounded-lg border-2 bg-[#F6F6F6] hover:bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${error ? "border-[#EF4444]" : "border-[#E5E7EB]"
+              } ${!value && "text-[#9CA3AF]"}`}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {value ? format(value, "MM/dd/yyyy") : <span>MM/DD/YYYY</span>}
@@ -251,7 +250,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
       {/* Form Container */}
       <div className="max-w-[960px] bg-white rounded-xl border border-[#E5E7EB] shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-0">
-          
+
           {/* Personal Information Section */}
           <Collapsible
             open={openSections.personal}
@@ -279,9 +278,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                     placeholder="Enter first name"
                     value={formData.first_name}
                     onChange={(e) => handleInputChange("first_name", e.target.value)}
-                    className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                      errors.first_name ? "border-[#EF4444]" : "border-[#E5E7EB]"
-                    }`}
+                    className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${errors.first_name ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                      }`}
                   />
                   {errors.first_name && (
                     <p className="text-sm text-[#EF4444]">{errors.first_name}</p>
@@ -299,9 +297,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                     placeholder="Enter last name"
                     value={formData.last_name}
                     onChange={(e) => handleInputChange("last_name", e.target.value)}
-                    className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                      errors.last_name ? "border-[#EF4444]" : "border-[#E5E7EB]"
-                    }`}
+                    className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${errors.last_name ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                      }`}
                   />
                   {errors.last_name && (
                     <p className="text-sm text-[#EF4444]">{errors.last_name}</p>
@@ -319,9 +316,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                     placeholder="example@umbc.edu"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                      errors.email ? "border-[#EF4444]" : "border-[#E5E7EB]"
-                    }`}
+                    className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${errors.email ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                      }`}
                   />
                   {errors.email && (
                     <p className="text-sm text-[#EF4444]">{errors.email}</p>
@@ -330,15 +326,15 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
                 {/* Personal Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="personalEmail" className="text-black">
+                  <Label htmlFor="personal_email" className="text-black">
                     Personal Email
                   </Label>
                   <Input
-                    id="personalEmail"
+                    id="personal_email"
                     type="email"
                     placeholder="personal@example.com"
-                    value={formData.personalEmail}
-                    onChange={(e) => handleInputChange("personalEmail", e.target.value)}
+                    value={formData.personal_email}
+                    onChange={(e) => handleInputChange("personal_email", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
@@ -366,15 +362,15 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
                 {/* Country of Birth */}
                 <div className="space-y-2">
-                  <Label htmlFor="countryOfBirth" className="text-black">
+                  <Label htmlFor="country_of_birth" className="text-black">
                     Country of Birth
                   </Label>
                   <Input
-                    id="countryOfBirth"
+                    id="country_of_birth"
                     type="text"
                     placeholder="Enter country of birth"
-                    value={formData.countryOfBirth}
-                    onChange={(e) => handleInputChange("countryOfBirth", e.target.value)}
+                    value={formData.country_of_birth}
+                    onChange={(e) => handleInputChange("country_of_birth", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
@@ -382,34 +378,34 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                 {/* citizenship */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="citizenships" className="text-black">
+                    <Label htmlFor="citizenship" className="text-black">
                       Citizenship(s)
                     </Label>
                     <HelpTooltip text="Enter multiple countries separated by commas (e.g., 'India, United States')" />
                   </div>
                   <Input
-                    id="citizenships"
+                    id="citizenship"
                     type="text"
                     placeholder="e.g., India, United States"
                     value={formData.citizenship}
-                    onChange={(e) => handleInputChange("citizenships", e.target.value)}
+                    onChange={(e) => handleInputChange("citizenship", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                   <p className="text-xs text-[#6B7280]">Separate multiple countries with commas</p>
                 </div>
 
-                {/* Number of Dependents */}
+                {/* Number of number_of_dependents */}
                 <div className="space-y-2">
-                  <Label htmlFor="numberOfDependents" className="text-black">
-                    Number of Dependents
+                  <Label htmlFor="number_of_dependents " className="text-black">
+                    Number of number_of_dependents
                   </Label>
                   <Input
-                    id="numberOfDependents"
+                    id="number_of_dependents "
                     type="number"
                     min="0"
                     placeholder="0"
-                    value={formData.numberOfDependents}
-                    onChange={(e) => handleInputChange("numberOfDependents", e.target.value)}
+                    value={formData.number_of_dependents }
+                    onChange={(e) => handleInputChange("number_of_dependents ", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
@@ -443,9 +439,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                     onValueChange={(value) => handleInputChange("department", value)}
                   >
                     <SelectTrigger
-                      className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                        errors.department ? "border-[#EF4444]" : "border-[#E5E7EB]"
-                      }`}
+                      className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${errors.department ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                        }`}
                     >
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
@@ -471,60 +466,60 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
                 {/* Employee Title */}
                 <div className="space-y-2">
-                  <Label htmlFor="employeeTitle" className="text-black">
+                  <Label htmlFor="employee_title" className="text-black">
                     Employee Title / Position
                   </Label>
                   <Input
-                    id="employeeTitle"
+                    id="employee_title"
                     type="text"
                     placeholder="e.g., Research Assistant, Professor"
-                    value={formData.employeeTitle}
-                    onChange={(e) => handleInputChange("employeeTitle", e.target.value)}
+                    value={formData.employee_title}
+                    onChange={(e) => handleInputChange("employee_title", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
 
                 {/* Department Admin */}
                 <div className="space-y-2">
-                  <Label htmlFor="departmentAdmin" className="text-black">
+                  <Label htmlFor="department_admin" className="text-black">
                     Department Admin
                   </Label>
                   <Input
-                    id="departmentAdmin"
+                    id="department_admin"
                     type="text"
                     placeholder="Enter department admin name"
-                    value={formData.departmentAdmin}
-                    onChange={(e) => handleInputChange("departmentAdmin", e.target.value)}
+                    value={formData.department_admin}
+                    onChange={(e) => handleInputChange("department_admin", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
 
                 {/* Department Advisor / PI / Chair */}
                 <div className="space-y-2">
-                  <Label htmlFor="departmentAdvisor" className="text-black">
+                  <Label htmlFor="department_advisor" className="text-black">
                     Department Advisor / PI / Chair
                   </Label>
                   <Input
-                    id="departmentAdvisor"
+                    id="department_advisor"
                     type="text"
                     placeholder="Enter advisor/PI/chair name"
-                    value={formData.departmentAdvisor}
-                    onChange={(e) => handleInputChange("departmentAdvisor", e.target.value)}
+                    value={formData.department_advisor}
+                    onChange={(e) => handleInputChange("department_advisor", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
 
                 {/* Annual Salary */}
                 <div className="space-y-2">
-                  <Label htmlFor="annualSalary" className="text-black">
+                  <Label htmlFor="annual_salary" className="text-black">
                     Annual Salary
                   </Label>
                   <Input
-                    id="annualSalary"
+                    id="annual_salary"
                     type="number"
                     placeholder="Enter annual salary"
-                    value={formData.annualSalary}
-                    onChange={(e) => handleInputChange("annualSalary", e.target.value)}
+                    value={formData.annual_salary}
+                    onChange={(e) => handleInputChange("annual_salary", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
@@ -551,17 +546,16 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                   {/* Visa Type */}
                   <div className="space-y-2">
-                    <Label htmlFor="visaType" className="text-black">
+                    <Label htmlFor="visa_type" className="text-black">
                       Visa Type <span className="text-[#EF4444]">*</span>
                     </Label>
                     <Select
-                      value={formData.visaType}
-                      onValueChange={(value) => handleInputChange("visaType", value)}
+                      value={formData.visa_type}
+                      onValueChange={(value) => handleInputChange("visa_type", value)}
                     >
                       <SelectTrigger
-                        className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${
-                          errors.visaType ? "border-[#EF4444]" : "border-[#E5E7EB]"
-                        }`}
+                        className={`h-11 rounded-lg border-2 bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20 ${errors.visa_type ? "border-[#EF4444]" : "border-[#E5E7EB]"
+                          }`}
                       >
                         <SelectValue placeholder="Select visa type" />
                       </SelectTrigger>
@@ -573,8 +567,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                         <SelectItem value="Permanent Resident">Permanent Resident</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.visaType && (
-                      <p className="text-sm text-[#EF4444]">{errors.visaType}</p>
+                    {errors.visa_type && (
+                      <p className="text-sm text-[#EF4444]">{errors.visa_type}</p>
                     )}
                   </div>
 
@@ -599,14 +593,14 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                     </Select>
                   </div>
 
-                  {/* Filed By */}
+                  {/* Filed By
                   <div className="space-y-2">
-                    <Label htmlFor="filedBy" className="text-black">
+                    <Label htmlFor="filed_by" className="text-black">
                       Filed By
                     </Label>
                     <Select
-                      value={formData.filedBy}
-                      onValueChange={(value) => handleInputChange("filedBy", value)}
+                      value={formData.filed_by}
+                      onValueChange={(value) => handleInputChange("filed_by", value)}
                     >
                       <SelectTrigger className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20">
                         <SelectValue placeholder="Select who filed" />
@@ -617,46 +611,90 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                         <SelectItem value="Self-Petition">Self-Petition</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div> */}
+
+                  {/* Filed By */}
+                  <div className="space-y-2">
+                    <Label htmlFor="filed_by" className="text-black">
+                      Filed By
+                    </Label>
+
+                    {(() => {
+                      const options = [
+                        "Attorney",
+                        "UMBC Administrator",
+                        "Self-Petition",
+                      ];
+
+                      const currentValue = formData.filed_by?.trim() || "";
+
+                      // If the value is not in the predefined options, add it dynamically
+                      const finalOptions = options.includes(currentValue)
+                        ? options
+                        : currentValue
+                          ? [...options, currentValue]
+                          : options;
+
+                      return (
+                        <Select
+                          value={currentValue}
+                          onValueChange={(value) => handleInputChange("filed_by", value)}
+                        >
+                          <SelectTrigger className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20">
+                            <SelectValue placeholder="Select who filed" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {finalOptions.map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      );
+                    })()}
                   </div>
+
 
                   {/* Case Type */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="caseType" className="text-black">
+                      <Label htmlFor="case_type" className="text-black">
                         Case Type
                       </Label>
                       <HelpTooltip text="e.g., H-1B Extension, Initial Change of Status, Permanent Resident application" />
                     </div>
                     <Input
-                      id="caseType"
+                      id="case_type"
                       type="text"
                       placeholder="e.g., H-1B Extension, Initial COS"
-                      value={formData.caseType}
-                      onChange={(e) => handleInputChange("caseType", e.target.value)}
+                      value={formData.case_type}
+                      onChange={(e) => handleInputChange("case_type", e.target.value)}
                       className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                     />
                   </div>
 
                   {/* Start Date */}
                   <DatePicker
-                    value={dates.visaStartDate}
-                    onChange={(date) => handleDateChange("visaStartDate", date)}
+                    value={dates.visa_start_date}
+                    onChange={(date) => handleDateChange("visa_start_date", date)}
                     label="Visa Start Date"
                   />
 
                   {/* Expiration Date */}
                   <DatePicker
-                    value={dates.expirationDate}
-                    onChange={(date) => handleDateChange("expirationDate", date)}
+                    value={dates.expiration_date}
+                    onChange={(date) => handleDateChange("expiration_date", date)}
                     label="Expiration Date"
                     required
-                    error={errors.expirationDate}
+                    error={errors.expiration_date}
                   />
 
                   {/* Initial H-1B Start Date */}
                   <DatePicker
-                    value={dates.initialH1BStartDate}
-                    onChange={(date) => handleDateChange("initialH1BStartDate", date)}
+                    value={dates.initial_h1b_start_date}
+                    onChange={(date) => handleDateChange("initial_h1b_start_date", date)}
                     label="Initial H-1B Start Date"
                   />
 
@@ -667,8 +705,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                       <HelpTooltip text="Optional reminder date for when to begin preparing visa extension" />
                     </div>
                     <DatePicker
-                      value={dates.prepExtensionDate}
-                      onChange={(date) => handleDateChange("prepExtensionDate", date)}
+                      value={dates.prep_extension_date }
+                      onChange={(date) => handleDateChange("prep_extension_date ", date)}
                       label=""
                     />
                   </div>
@@ -680,8 +718,8 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                       <HelpTooltip text="The maximum period end date for H-1B visa (typically 6 years from initial H-1B start)" />
                     </div>
                     <DatePicker
-                      value={dates.maxHPeriod}
-                      onChange={(date) => handleDateChange("maxHPeriod", date)}
+                      value={dates.max_h_period}
+                      onChange={(date) => handleDateChange("max_h_period", date)}
                       label=""
                     />
                   </div>
@@ -689,17 +727,17 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                   {/* I-94 Number */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="i94Number" className="text-black">
+                      <Label htmlFor="i94_number " className="text-black">
                         I-94 Number
                       </Label>
                       <HelpTooltip text="The I-94 Arrival/Departure Record number" />
                     </div>
                     <Input
-                      id="i94Number"
+                      id="i94_number "
                       type="text"
                       placeholder="Enter I-94 number"
-                      value={formData.i94Number}
-                      onChange={(e) => handleInputChange("i94Number", e.target.value)}
+                      value={formData.i94_number }
+                      onChange={(e) => handleInputChange("i94_number ", e.target.value)}
                       className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                     />
                   </div>
@@ -711,23 +749,23 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                       <HelpTooltip text="The expiration date shown on the I-94 record" />
                     </div>
                     <DatePicker
-                      value={dates.i94ExpiryDate}
-                      onChange={(date) => handleDateChange("i94ExpiryDate", date)}
+                      value={dates.i94_expiry_date}
+                      onChange={(date) => handleDateChange("i94_expiry_date", date)}
                       label=""
                     />
                   </div>
 
                   {/* SEVIS ID */}
                   <div className="space-y-2">
-                    <Label htmlFor="sevisId" className="text-black">
+                    <Label htmlFor="sevis_id" className="text-black">
                       SEVIS ID
                     </Label>
                     <Input
-                      id="sevisId"
+                      id="sevis_id"
                       type="text"
                       placeholder="Enter SEVIS ID (for F-1)"
-                      value={formData.sevisId}
-                      onChange={(e) => handleInputChange("sevisId", e.target.value)}
+                      value={formData.sevis_id}
+                      onChange={(e) => handleInputChange("sevis_id", e.target.value)}
                       className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                     />
                   </div>
@@ -739,19 +777,19 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {/* PR Filing Date */}
                     <DatePicker
-                      value={dates.prFilingDate}
-                      onChange={(date) => handleDateChange("prFilingDate", date)}
+                      value={dates.pr_filing_date}
+                      onChange={(date) => handleDateChange("pr_filing_date", date)}
                       label="PR Filing Date"
                     />
 
                     {/* PR Status */}
                     <div className="space-y-2">
-                      <Label htmlFor="prStatus" className="text-black">
+                      <Label htmlFor="pr_status" className="text-black">
                         PR Current Status
                       </Label>
                       <Select
-                        value={formData.prStatus}
-                        onValueChange={(value) => handleInputChange("prStatus", value)}
+                        value={formData.pr_status}
+                        onValueChange={(value) => handleInputChange("pr_status", value)}
                       >
                         <SelectTrigger className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20">
                           <SelectValue placeholder="Select PR status" />
@@ -768,14 +806,14 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
                     {/* PR Notes */}
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="prNotes" className="text-black">
+                      <Label htmlFor="pr_notes" className="text-black">
                         PR Notes
                       </Label>
                       <Textarea
-                        id="prNotes"
+                        id="pr_notes"
                         placeholder="Enter any notes about permanent residency application..."
-                        value={formData.prNotes}
-                        onChange={(e) => handleInputChange("prNotes", e.target.value)}
+                        value={formData.pr_notes}
+                        onChange={(e) => handleInputChange("pr_notes", e.target.value)}
                         rows={3}
                         className="rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                       />
@@ -804,12 +842,12 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {/* Highest Educational Level */}
                 <div className="space-y-2">
-                  <Label htmlFor="highestEducation" className="text-black">
+                  <Label htmlFor="highest_education" className="text-black">
                     Highest Educational Level
                   </Label>
                   <Select
-                    value={formData.highestEducation}
-                    onValueChange={(value) => handleInputChange("highestEducation", value)}
+                    value={formData.highest_education}
+                    onValueChange={(value) => handleInputChange("highest_education", value)}
                   >
                     <SelectTrigger className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20">
                       <SelectValue placeholder="Select education level" />
@@ -827,15 +865,15 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
                 {/* Field of Study */}
                 <div className="space-y-2">
-                  <Label htmlFor="fieldOfStudy" className="text-black">
+                  <Label htmlFor="field_of_study" className="text-black">
                     Field of Study
                   </Label>
                   <Input
-                    id="fieldOfStudy"
+                    id="field_of_study"
                     type="text"
                     placeholder="e.g., Computer Science, Biology"
-                    value={formData.fieldOfStudy}
-                    onChange={(e) => handleInputChange("fieldOfStudy", e.target.value)}
+                    value={formData.field_of_study}
+                    onChange={(e) => handleInputChange("field_of_study", e.target.value)}
                     className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
                 </div>
@@ -863,32 +901,32 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                   {/* SOC Code */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="socCode" className="text-black">
+                      <Label htmlFor="soc_code" className="text-black">
                         SOC Code
                       </Label>
                       <HelpTooltip text="Standard Occupational Classification code for USCIS reporting" />
                     </div>
                     <Input
-                      id="socCode"
+                      id="soc_code"
                       type="text"
                       placeholder="e.g., 15-1252"
-                      value={formData.socCode}
-                      onChange={(e) => handleInputChange("socCode", e.target.value)}
+                      value={formData.soc_code}
+                      onChange={(e) => handleInputChange("soc_code", e.target.value)}
                       className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                     />
                   </div>
 
                   {/* SOC Code Description */}
                   <div className="space-y-2">
-                    <Label htmlFor="socCodeDescription" className="text-black">
+                    <Label htmlFor="soc_code_description" className="text-black">
                       SOC Code Description
                     </Label>
                     <Input
-                      id="socCodeDescription"
+                      id="soc_code_description"
                       type="text"
                       placeholder="e.g., Software Developers"
-                      value={formData.socCodeDescription}
-                      onChange={(e) => handleInputChange("socCodeDescription", e.target.value)}
+                      value={formData.soc_code_description}
+                      onChange={(e) => handleInputChange("soc_code_description", e.target.value)}
                       className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                     />
                   </div>
@@ -896,14 +934,14 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
                 {/* General Notes */}
                 <div className="space-y-2">
-                  <Label htmlFor="generalNotes" className="text-black">
+                  <Label htmlFor="general_notes" className="text-black">
                     General Notes
                   </Label>
                   <Textarea
-                    id="generalNotes"
+                    id="general_notes"
                     placeholder="Enter any additional notes about this employee..."
-                    value={formData.generalNotes}
-                    onChange={(e) => handleInputChange("generalNotes", e.target.value)}
+                    value={formData.general_notes}
+                    onChange={(e) => handleInputChange("general_notes", e.target.value)}
                     rows={4}
                     className="rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                   />
