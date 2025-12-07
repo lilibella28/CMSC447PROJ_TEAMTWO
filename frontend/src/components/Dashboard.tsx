@@ -3,9 +3,9 @@ import { StatCard } from "./StatCard";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Alert, AlertDescription } from "./ui/alert";
-import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
+import { MissingDatesWarningBanner } from "./MissingDatesWarningBanner";
 import {
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ import {
   RefreshCw,
   Mail,
   Edit,
+  BookOpen,
 } from "lucide-react";
 import {
   BarChart,
@@ -50,18 +51,23 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fetchVisaCases, fetchStatistics, VisaCase } from "../../utils/dataService";
-import { exportToExcel } from "../../utils/excelExport";
+import { exportEmployeesToExcel, generateTimestampedFilename } from "../../utils/excelExport";
+import { toast } from "sonner";
 import {
   Tooltip as UITooltip,
   TooltipContent,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { ReportingToolbar, ReportingMode } from "./ReportingToolbar";
+import { User } from "../../utils/roles";
 
 interface DashboardProps {
   onNavigateToAddEmployee?: () => void;
   onNavigateToImport?: () => void;
   onViewEmployee?: (employee: VisaCase) => void;
   onEditEmployee?: (employee: VisaCase) => void;
+  onNavigate?: (page: string) => void;
+  currentUser?: User;
 }
 
 export function Dashboard({
@@ -69,6 +75,8 @@ export function Dashboard({
   onNavigateToImport,
   onViewEmployee,
   onEditEmployee,
+  onNavigate,
+  currentUser,
 }: DashboardProps) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [visaCases, setVisaCases] = useState<VisaCase[]>([]);
@@ -80,13 +88,19 @@ export function Dashboard({
     totalVisas: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
+  
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [visa_typeFilter, setvisa_typeFilter] = useState("all");
+  const [visaTypeFilter, setVisaTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
+  
+  // Reporting states
+  const [reportStartDate, setReportStartDate] = useState<string | null>(null);
+  const [reportEndDate, setReportEndDate] = useState<string | null>(null);
+  const [reportMode, setReportMode] = useState<ReportingMode | null>(null);
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -117,6 +131,14 @@ export function Dashboard({
 
   // Filter visa cases by all filters
   const filteredVisaCases = visaCases.filter((visaCase) => {
+    // Role-based filtering: Assistants only see assigned employees
+    if (currentUser?.role === 'manager' && currentUser.assignedEmployees) {
+      const isAssigned = currentUser.assignedEmployees.includes(visaCase.id);
+      if (!isAssigned) {
+        return false;
+      }
+    }
+
     // Search filter (name or email)
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
@@ -130,14 +152,23 @@ export function Dashboard({
       visaCase.employee.department === departmentFilter;
 
     // Visa type filter
-    const matchesvisa_type =
-      visa_typeFilter === "all" ||
-      visaCase.visa_type === visa_typeFilter;
+    const matchesVisaType =
+      visaTypeFilter === "all" ||
+      visaCase.visa_type === visaTypeFilter;
 
     // Status filter (from dropdown)
     const matchesStatusFilter =
       statusFilter === "all" ||
       visaCase.status === statusFilter;
+
+    // Date range filter (from reporting toolbar)
+    let matchesDateRange = true;
+    if (reportStartDate && reportEndDate) {
+      const expDate = new Date(visaCase.expiration_date);
+      const startDate = new Date(reportStartDate);
+      const endDate = new Date(reportEndDate);
+      matchesDateRange = expDate >= startDate && expDate <= endDate;
+    }
 
     // StatCard filter (takes precedence if set)
     let matchesStatCard = true;
@@ -151,7 +182,7 @@ export function Dashboard({
       matchesStatCard = visaCase.status === "Processing" || visaCase.status === "Pending";
     }
 
-    return matchesSearch && matchesDepartment && matchesvisa_type && matchesStatusFilter && matchesStatCard;
+    return matchesSearch && matchesDepartment && matchesVisaType && matchesStatusFilter && matchesDateRange && matchesStatCard;
   });
 
   // Get status priority for sorting (lower number = higher priority)
@@ -176,16 +207,15 @@ export function Dashboard({
     // First, sort by status priority
     const priorityA = getStatusPriority(a.status);
     const priorityB = getStatusPriority(b.status);
-
+    
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
+    
+    const daysA = a.daysLeft ?? Infinity;
+  const daysB = b.daysLeft ?? Infinity;
 
-    // Within same priority group, sort alphabetically by last name
-    const lastNameA = (a.employee?.name || "").split(" ").pop() || "";
-    const lastNameB = (b.employee?.name || "").split(" ").pop() || "";
-
-    return lastNameA.localeCompare(lastNameB);
+  return daysA - daysB;
   });
 
   // Pagination
@@ -197,14 +227,14 @@ export function Dashboard({
   // Reset to page 1 when any filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter, searchQuery, departmentFilter, visa_typeFilter, statusFilter]);
+  }, [activeFilter, searchQuery, departmentFilter, visaTypeFilter, statusFilter]);
 
   // Get unique values for filter dropdowns
   const allDepartments = Array.isArray(visaCases) ? Array.from(
     new Set(visaCases.map((vc) => vc.employee.department))
   ).sort() : [];
 
-  const allvisa_types = Array.isArray(visaCases) ? Array.from(
+  const allVisaTypes = Array.isArray(visaCases) ? Array.from(
     new Set(visaCases.map((vc) => vc.visa_type))
   ).sort() : [];
 
@@ -217,6 +247,7 @@ export function Dashboard({
     setActiveFilter(activeFilter === filterType ? null : filterType);
   };
 
+ 
   // Get status badge style
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
@@ -281,9 +312,9 @@ export function Dashboard({
     }
   };
 
- 
+  
   // Prepare chart data
-  const visa_typeData = Array.isArray(visaCases) ? Object.entries(
+  const visaTypeData = Array.isArray(visaCases) ? Object.entries(
     visaCases.reduce((acc, vc) => {
       acc[vc.visa_type] = (acc[vc.visa_type] || 0) + 1;
       return acc;
@@ -340,11 +371,21 @@ export function Dashboard({
                 <span className="hidden md:inline">Import Excel</span>
               </Button>
               <Button
-                onClick={() => exportToExcel(sortedVisaCases, "visa_cases")}
+                onClick={() => {
+                  setIsDownloading("export");
+                  exportEmployeesToExcel(sortedVisaCases, generateTimestampedFilename("visa_cases")).then(() => {
+                    setIsDownloading(null);
+                  });
+                }}
                 variant="outline"
                 className="border-[#E1E1E1] flex-1 md:flex-none"
+                disabled={isDownloading === "export"}
               >
-                <Download className="h-4 w-4 md:mr-2" />
+                {isDownloading === "export" ? (
+                  <RefreshCw className="h-4 w-4 md:mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 md:mr-2" />
+                )}
                 <span className="hidden md:inline">Export Excel</span>
               </Button>
               <Button
@@ -359,6 +400,8 @@ export function Dashboard({
           <div className="h-[1px] bg-[#E5E5E5]" />
         </div>
 
+      
+
         {/* Alert Banner */}
         {expiringWithin60Days > 0 && (
           <Alert className="mb-6 border-[#F59E0B] bg-[#FFF7E6]">
@@ -368,6 +411,19 @@ export function Dashboard({
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Missing Dates Warning Banner */}
+        <MissingDatesWarningBanner
+          onNavigateToEmployee={(employeeId) => {
+            // Find the employee and navigate to their profile
+            const employee = visaCases.find(vc => vc.id === employeeId);
+            if (employee && onViewEmployee) {
+              onViewEmployee(employee);
+            }
+          }}
+          showDismissAll={true}
+          maxVisible={3}
+        />
 
         {/* Case Summary Metrics */}
         <div className="mb-8">
@@ -461,13 +517,13 @@ export function Dashboard({
               </Select>
 
               {/* Visa Type Filter */}
-              <Select value={visa_typeFilter} onValueChange={setvisa_typeFilter}>
+              <Select value={visaTypeFilter} onValueChange={setVisaTypeFilter}>
                 <SelectTrigger className="w-full lg:w-[180px] h-10 bg-white border-[#E1E1E1] rounded-lg">
                   <SelectValue placeholder="Visa Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Visa Types</SelectItem>
-                  {allvisa_types.map((type) => (
+                  {allVisaTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
@@ -536,97 +592,97 @@ export function Dashboard({
                     </TableRow>
                   ) : (
                     paginatedCases.map((employee, index) => (
-                      <TableRow
-                        key={employee.id}
-                        className={`
+                    <TableRow
+                      key={employee.id}
+                      className={`
                         border-b border-[#E5E5E5] transition-colors cursor-pointer
                         ${index % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"}
                         hover:bg-[#E9F2FF]
                       `}
-                        onClick={() => onViewEmployee?.(employee)}
-                      >
-                        <TableCell>
-                          <span className="text-sm text-[#1E1E1E] font-medium">
-                            {employee.employee.name}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm text-[#4A4A4A]">
-                          {employee.employee.department}
-                        </TableCell>
-                        <TableCell className="text-sm text-[#4A4A4A]">
-                          {employee.visa_type}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusBadgeStyle(employee.status)}>
-                            {employee.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-[#4A4A4A]">
-                          {new Date(employee.expiration_date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </TableCell>
-                        <TableCell>
-                          {(() => {
-                            const daysInfo = formatDaysRemaining(employee.daysLeft);
-                            return (
-                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${daysInfo.bgColor}`}>
-                                {daysInfo.icon}
-                                <span className={`text-sm font-medium ${daysInfo.color}`}>
-                                  {daysInfo.text}
-                                </span>
-                              </div>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="text-sm text-[#4A4A4A]">
-                          {employee.status === "Expired" ? (
-                            <span className="text-[#DC2626] font-medium">Highest Priority</span>
-                          ) : employee.daysLeft < 60 && employee.daysLeft >= 0 ? (
-                            <span className="text-[#F59E0B] font-medium">Extension Needed</span>
-                          ) : null}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onViewEmployee?.(employee);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEditEmployee?.(employee);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.location.href = `mailto:${employee.employee.email}`;
-                              }}
-                            >
-                              <Mail className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                      onClick={() => onViewEmployee?.(employee)}
+                    >
+                      <TableCell>
+                        <span className="text-sm text-[#1E1E1E] font-medium">
+                          {employee.employee.name}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-sm text-[#4A4A4A]">
+                        {employee.employee.department}
+                      </TableCell>
+                      <TableCell className="text-sm text-[#4A4A4A]">
+                        {employee.visa_type}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusBadgeStyle(employee.status)}>
+                          {employee.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-[#4A4A4A]">
+                        {new Date(employee.expiration_date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const daysInfo = formatDaysRemaining(employee.daysLeft);
+                          return (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${daysInfo.bgColor}`}>
+                              {daysInfo.icon}
+                              <span className={`text-sm font-medium ${daysInfo.color}`}>
+                                {daysInfo.text}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </TableCell>
+                      <TableCell className="text-sm text-[#4A4A4A]">
+                        {employee.status === "Expired" ? (
+                          <span className="text-[#DC2626] font-medium">Highest Priority</span>
+                        ) : employee.daysLeft < 60 && employee.daysLeft >= 0 ? (
+                          <span className="text-[#F59E0B] font-medium">Extension Needed</span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewEmployee?.(employee);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditEmployee?.(employee);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `mailto:${employee.employee.email}`;
+                            }}
+                          >
+                            <Mail className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                   )}
                 </TableBody>
               </Table>
@@ -680,10 +736,11 @@ export function Dashboard({
                           variant={currentPage === pageNum ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`h-9 w-9 p-0 ${currentPage === pageNum
+                          className={`h-9 w-9 p-0 ${
+                            currentPage === pageNum
                               ? "bg-[#5B8DEF] text-white hover:bg-[#4A7DD8]"
                               : "border-[#E1E1E1]"
-                            }`}
+                          }`}
                         >
                           {pageNum}
                         </Button>
@@ -717,7 +774,7 @@ export function Dashboard({
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={visa_typeData}
+                    data={visaTypeData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -726,7 +783,7 @@ export function Dashboard({
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {visa_typeData.map((entry, index) => (
+                    {visaTypeData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -750,6 +807,7 @@ export function Dashboard({
             </Card>
           </div>
         </div>
+
 
         {/* Footer */}
         <div className="mt-8 pt-6 border-t border-[#E5E5E5]">

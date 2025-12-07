@@ -198,7 +198,7 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
       newErrors.first_name = "First name is required";
     }
     if (!formData.last_name.trim()) {
-      newErrors.lastName = "Last name is required";
+      newErrors.last_name = "Last name is required";
     }
     if (!formData.email.trim()) {
       newErrors.email = "UMBC email is required";
@@ -421,18 +421,18 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
 
                       {/* Last Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-[#1E1E1E]">
+                        <Label htmlFor="last_name" className="text-[#1E1E1E]">
                           Last Name <span className="text-[#DC2626]">*</span>
                         </Label>
                         <Input
-                          id="lastName"
+                          id="last_name"
                           value={formData.last_name}
-                          onChange={(e) => handleInputChange("lastName", e.target.value)}
-                          className={`border-[#E5E5E5] ${errors.lastName ? "border-[#DC2626]" : ""}`}
+                          onChange={(e) => handleInputChange("last_name", e.target.value)}
+                          className={`border-[#E5E5E5] ${errors.last_name ? "border-[#DC2626]" : ""}`}
                           placeholder="Enter last name"
                         />
-                        {errors.lastName && (
-                          <p className="text-sm text-[#DC2626]">{errors.lastName}</p>
+                        {errors.last_name && (
+                          <p className="text-sm text-[#DC2626]">{errors.last_name}</p>
                         )}
                       </div>
 
@@ -962,7 +962,7 @@ export function EditEmployee({ employee, onCancel, onSave }: EditEmployeeProps) 
                             <Calendar
                               mode="single"
                               selected={dates.prep_extension_date }
-                              onSelect={(date) => handleDateChange("prep_extension_date ", date)}
+                              onSelect={(date) => handleDateChange("prep_extension_date", date)}
                               initialFocus
                             />
                           </PopoverContent>

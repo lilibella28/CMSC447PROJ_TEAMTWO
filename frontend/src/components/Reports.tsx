@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -30,8 +30,13 @@ import {
   Filter,
   ArrowUpDown,
   ChevronDown,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Edit2,
+  Mail,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
+import { exportEmployeesToExcel, generateTimestampedFilename } from "../../utils/excelExport";
 import {
   BarChart,
   Bar,
@@ -47,7 +52,7 @@ import {
 } from "recharts";
 import { fetchEmployees, Employee } from "../../utils/dataService";
 import { calculateVisaStatus, calculateDaysRemaining } from "../../utils/visaStatusUtils";
-import { ReportingToolbar, ReportingMode } from "./ReportingToolBar.tsx";
+import { ReportingToolbar, ReportingMode } from "./ReportingToolbar";
 import { toast } from "sonner";
 
 // Visa Type color palette (neutral analytical scheme)
@@ -68,18 +73,39 @@ const GENDER_COLORS: Record<string, string> = {
   "Other": "#D9D9D9",
 };
 
-export function Reports() {
+// Define VisaCase type based on the structure used in Dashboard
+interface VisaCase {
+  id: string;
+  employee: {
+    name: string;
+    email: string;
+    department: string;
+  };
+  visa_type: string;
+  status: string;
+  expiration_date: string;
+  daysLeft: number;
+}
+
+interface ReportsProps {
+  onViewEmployee?: (employee: VisaCase) => void;
+  onEditEmployee?: (employee: VisaCase) => void;
+}
+
+export function Reports({ onViewEmployee, onEditEmployee }: ReportsProps) {
   const [reportPeriod, setReportPeriod] = useState("fiscal-year");
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string[]>([]);
-  const [visa_typeFilter, setvisa_typeFilter] = useState<string[]>([]);
+  const [visa_typeFilter, setVisaTypeFilter] = useState<string[]>([]);
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
-  const [pr_statusFilter, setpr_statusFilter] = useState<string[]>([]);
+  const [prStatusFilter, setPrStatusFilter] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [employeesData, setEmployeesData] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   
   // Date range filtering states
   const [reportStartDate, setReportStartDate] = useState<string | null>(null);
@@ -107,18 +133,18 @@ export function Reports() {
     const hasPendingApplication = !!emp.pendingVisaApplication;
     const daysLeft = calculateDaysRemaining(emp.expiration_date);
     const computedStatus = calculateVisaStatus(emp.expiration_date, hasPendingApplication);
-
+    const { first_name, last_name } = emp;
     return {
       id: emp.id,
-      name: emp.employeeName,
+      name:`${first_name} ${last_name}`,
       department: emp.department,
       title: emp.employee_title || "N/A",
       case_type: emp.case_type || "N/A",
-      filed_by: emp.visaFiledBy,
+      filedBy: emp.visaFiledBy,
       start_date: emp.visa_start_date || emp.start_date,
       expiration_date: emp.expiration_date,
       number_of_dependents: emp.number_of_dependents,
-      pr_status: emp.permanentResidency?.currentStatus || "Not Started",
+      prStatus: emp.permanentResidency?.currentStatus || "Not Started",
       country: emp.country_of_birth || emp.nationality,
       visa_type: emp.visa_type,
       status: computedStatus, // Use computed status instead of stored status
@@ -148,16 +174,16 @@ export function Reports() {
     const matchesDepartment =
       departmentFilter.length === 0 || departmentFilter.includes(item.department);
     
-    const matchesvisa_type =
+    const matchesVisaType =
       visa_typeFilter.length === 0 || visa_typeFilter.includes(item.visa_type);
     
     const matchesCountry =
       countryFilter.length === 0 || countryFilter.includes(item.country);
     
-    const matchespr_status =
-      pr_statusFilter.length === 0 || pr_statusFilter.includes(item.pr_status);
+    const matchesPrStatus =
+      prStatusFilter.length === 0 || prStatusFilter.includes(item.prStatus);
 
-    return matchesSearch && matchesDepartment && matchesvisa_type && matchesCountry && matchespr_status;
+    return matchesSearch && matchesDepartment && matchesVisaType && matchesCountry && matchesPrStatus;
   });
 
   // Sort data
@@ -184,9 +210,13 @@ export function Reports() {
 
   // Calculate KPIs
   const totalEmployees = filteredData.length;
+  const activeVisas = filteredData.filter((d) => d.status === "Active").length;
+  const expiringWithin60Days = filteredData.filter((d) => d.status === "Expiring Soon" || (d.daysLeft > 0 && d.daysLeft <= 60)).length;
+  const expiredVisas = filteredData.filter((d) => d.status === "Expired" || d.daysLeft < 0).length;
+  const pendingVisas = filteredData.filter((d) => d.status === "Processing" || d.status === "Pending").length;
   const activeH1B = filteredData.filter((d) => d.visa_type === "H-1B" && d.status === "Active").length;
   const pendingPR = filteredData.filter((d) => 
-    d.pr_status === "Filed" || d.pr_status === "Awaiting Response"
+    d.prStatus === "Filed" || d.prStatus === "Awaiting Response"
   ).length;
   const expiringNext90 = filteredData.filter((d) => d.daysLeft > 0 && d.daysLeft <= 90).length;
 
@@ -202,7 +232,7 @@ export function Reports() {
   // Filed By distribution (use date range filtered data)
   const filedByData = Object.entries(
     dateRangeFilteredData.reduce((acc, item) => {
-      acc[item.filed_by] = (acc[item.filed_by] || 0) + 1;
+      acc[item.filedBy] = (acc[item.filedBy] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value }));
@@ -317,13 +347,13 @@ export function Reports() {
 
   // Get unique values for filters
   const uniqueDepartments = Array.from(new Set(reportData.map(d => d.department))).sort();
-  const uniquevisa_types = Array.from(new Set(reportData.map(d => d.visa_type))).sort();
+  const uniqueVisaTypes = Array.from(new Set(reportData.map(d => d.visa_type))).sort();
   const uniqueCountries = Array.from(new Set(reportData.map(d => d.country))).filter(Boolean).sort();
-  const uniquepr_statuses = Array.from(new Set(reportData.map(d => d.pr_status))).sort();
+  const uniquePrStatuses = Array.from(new Set(reportData.map(d => d.prStatus))).sort();
 
   // Export functions
   const exportCSV = () => {
-    const headers = ["Employee Name", "Department", "Title", "Case Type", "Filed By", "Start Date", "Expiration Date", "number_of_dependents", "PR Status", "Country", "Notes"];
+    const headers = ["Employee Name", "Department", "Title", "Case Type", "Filed By", "Start Date", "Expiration Date", "Dependents", "PR Status", "Country", "Notes"];
     const csvContent = [
       headers.join(","),
       ...sortedData.map(row => [
@@ -331,11 +361,11 @@ export function Reports() {
         `"${row.department}"`,
         `"${row.title}"`,
         `"${row.case_type}"`,
-        `"${row.filed_by}"`,
+        `"${row.filedBy}"`,
         row.start_date,
         row.expiration_date,
         row.number_of_dependents,
-        `"${row.pr_status}"`,
+        `"${row.prStatus}"`,
         `"${row.country}"`,
         `"${row.notes}"`
       ].join(","))
@@ -351,6 +381,24 @@ export function Reports() {
 
   const exportPDF = () => {
     alert("PDF export functionality would be implemented here with a PDF library.");
+  };
+
+  const exportExcel = async () => {
+    try {
+      const filename = generateTimestampedFilename("USCIS_Compliance_Report");
+      await exportEmployeesToExcel(employeesData, filename);
+      
+      toast.success("Excel file exported!", {
+        description: `${filename} has been downloaded successfully.`,
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error("Excel export failed", {
+        description: "Could not generate the Excel file. Please try again.",
+        duration: 5000,
+      });
+    }
   };
 
   // Current timestamp
@@ -377,46 +425,6 @@ export function Reports() {
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
-              <Select value={reportPeriod} onValueChange={setReportPeriod}>
-                <SelectTrigger className="w-[180px] h-10 bg-white border-[#E5E5E5]">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fiscal-year">Fiscal Year 2025</SelectItem>
-                  <SelectItem value="academic-year">Academic Year 2024-25</SelectItem>
-                  <SelectItem value="calendar-year">Calendar Year 2025</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="outline"
-                onClick={exportCSV}
-                className="h-10 border-[#E5E5E5] hover:bg-[#F8F9FA]"
-              >
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={exportPDF}
-                className="h-10 border-[#E5E5E5] hover:bg-[#F8F9FA]"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export PDF
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="h-10 border-[#E5E5E5] hover:bg-[#F8F9FA]"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-                <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-              </Button>
             </div>
           </div>
         </div>
@@ -493,6 +501,9 @@ export function Reports() {
           </Card>
         </div>
 
+        {/* Case Summary Section */}
+
+        
         {/* Employee Distribution Overview */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -665,6 +676,15 @@ export function Reports() {
             </Card>
           </div>
         </div>
+        <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="h-10 border-[#E5E5E5] hover:bg-[#F8F9FA]"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+                <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+              </Button>
 
         {/* Filters Sidebar */}
         {showFilters && (
@@ -700,16 +720,16 @@ export function Reports() {
               <div className="space-y-3">
                 <Label className="text-sm text-[#4A4A4A]">Visa Type</Label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {uniquevisa_types.map((visa) => (
+                  {uniqueVisaTypes.map((visa) => (
                     <div key={visa} className="flex items-center space-x-2">
                       <Checkbox
                         id={`visa-${visa}`}
                         checked={visa_typeFilter.includes(visa)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setvisa_typeFilter([...visa_typeFilter, visa]);
+                            setVisaTypeFilter([...visa_typeFilter, visa]);
                           } else {
-                            setvisa_typeFilter(visa_typeFilter.filter(v => v !== visa));
+                            setVisaTypeFilter(visa_typeFilter.filter(v => v !== visa));
                           }
                         }}
                       />
@@ -750,16 +770,16 @@ export function Reports() {
               <div className="space-y-3">
                 <Label className="text-sm text-[#4A4A4A]">PR Status</Label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {uniquepr_statuses.map((status) => (
+                  {uniquePrStatuses.map((status) => (
                     <div key={status} className="flex items-center space-x-2">
                       <Checkbox
                         id={`pr-${status}`}
-                        checked={pr_statusFilter.includes(status)}
+                        checked={prStatusFilter.includes(status)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setpr_statusFilter([...pr_statusFilter, status]);
+                            setPrStatusFilter([...prStatusFilter, status]);
                           } else {
-                            setpr_statusFilter(pr_statusFilter.filter(s => s !== status));
+                            setPrStatusFilter(prStatusFilter.filter(s => s !== status));
                           }
                         }}
                       />
@@ -778,9 +798,9 @@ export function Reports() {
                 size="sm"
                 onClick={() => {
                   setDepartmentFilter([]);
-                  setvisa_typeFilter([]);
+                  setVisaTypeFilter([]);
                   setCountryFilter([]);
-                  setpr_statusFilter([]);
+                  setPrStatusFilter([]);
                 }}
                 className="border-[#E5E5E5]"
               >
@@ -790,10 +810,12 @@ export function Reports() {
           </Card>
         )}
 
+       
         {/* Main Data Table */}
         <Card className="bg-white border-[#E5E5E5]">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
+              
               <h2 className="text-lg text-[#1E1E1E]">Employee Visa Data</h2>
               <div className="relative w-72">
                 <Input
@@ -853,14 +875,15 @@ export function Reports() {
                           <ArrowUpDown className="h-3 w-3" />
                         </button>
                       </TableHead>
-                      <TableHead className="text-[#1E1E1E]">number_of_dependents</TableHead>
+                      <TableHead className="text-[#1E1E1E]">Dependents</TableHead>
                       <TableHead className="text-[#1E1E1E]">PR Status</TableHead>
                       <TableHead className="text-[#1E1E1E]">Country</TableHead>
                       <TableHead className="text-[#1E1E1E]">Notes</TableHead>
+                      <TableHead className="text-[#1E1E1E] text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedData.map((row, index) => (
+                    {sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((row, index) => (
                       <TableRow
                         key={row.id}
                         className={`${
@@ -871,7 +894,7 @@ export function Reports() {
                         <TableCell className="text-[#4A4A4A]">{row.department}</TableCell>
                         <TableCell className="text-[#4A4A4A]">{row.title}</TableCell>
                         <TableCell className="text-[#4A4A4A]">{row.case_type}</TableCell>
-                        <TableCell className="text-[#4A4A4A]">{row.filed_by}</TableCell>
+                        <TableCell className="text-[#4A4A4A]">{row.filedBy}</TableCell>
                         <TableCell className="text-[#4A4A4A]">
                           {new Date(row.start_date).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -890,17 +913,57 @@ export function Reports() {
                         <TableCell>
                           <Badge
                             style={{
-                              backgroundColor: PR_STATUS_COLORS[row.pr_status] || "#B1B1B1",
+                              backgroundColor: PR_STATUS_COLORS[row.prStatus] || "#B1B1B1",
                               color: "white",
                               border: "none"
                             }}
                           >
-                            {row.pr_status}
+                            {row.prStatus}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-[#4A4A4A]">{row.country}</TableCell>
                         <TableCell className="text-[#4A4A4A] max-w-[200px] truncate" title={row.notes}>
                           {row.notes || "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[#4A4A4A] hover:text-black"
+                            onClick={() => onEditEmployee?.({
+                              id: row.id,
+                              employee: {
+                                name: row.name,
+                                email: employeesData.find(e => e.id === row.id)?.email || "",
+                                department: row.department
+                              },
+                              visa_type: row.visa_type,
+                              status: row.status,
+                              expiration_date: row.expiration_date,
+                              daysLeft: row.daysLeft
+                            })}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[#4A4A4A] hover:text-black"
+                            onClick={() => onViewEmployee?.({
+                              id: row.id,
+                              employee: {
+                                name: row.name,
+                                email: employeesData.find(e => e.id === row.id)?.email || "",
+                                department: row.department
+                              },
+                              visa_type: row.visa_type,
+                              status: row.status,
+                              expiration_date: row.expiration_date,
+                              daysLeft: row.daysLeft
+                            })}
+                          >
+                            <Mail className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -912,6 +975,79 @@ export function Reports() {
             <div className="mt-4 text-sm text-[#6B6B6B]">
               Showing {sortedData.length} of {reportData.length} employees
             </div>
+
+            {/* Pagination */}
+            {Math.ceil(sortedData.length / itemsPerPage) > 1 && (
+              <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#E5E5E5] bg-[#F8F9FA]">
+                <div className="text-sm text-[#4A4A4A]">
+                  Showing{" "}
+                  <span className="font-medium text-[#1E1E1E]">
+                    {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, sortedData.length)}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium text-[#1E1E1E]">
+                    {sortedData.length}
+                  </span>{" "}
+                  cases
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="h-9 px-3 border-[#E1E1E1]"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, Math.ceil(sortedData.length / itemsPerPage)) }, (_, i) => {
+                      const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`h-9 w-9 p-0 ${
+                            currentPage === pageNum
+                              ? "bg-[#5B8DEF] text-white hover:bg-[#4A7DD8]"
+                              : "border-[#E1E1E1]"
+                          }`}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.min(Math.ceil(sortedData.length / itemsPerPage), p + 1))}
+                    disabled={currentPage === Math.ceil(sortedData.length / itemsPerPage)}
+                    className="h-9 px-3 border-[#E1E1E1]"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 

@@ -37,8 +37,8 @@ export interface EmployeeData {
   id: number;
   employeeName: string;
   // Personal Information
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   personal_email?: string;
   gender?: "Male" | "Female" | "Non-binary" | "Prefer not to say" | string;
   country_of_birth?: string;
@@ -57,7 +57,7 @@ export interface EmployeeData {
   department_advisor?: string;
  annual_salary?: number;
   start_date: string;
-  salaryHistory: SalaryRecord[];
+  salary_history: SalaryRecord[];
   // Visa & Immigration
   visa_type: string;
   status: "Active" | "Pending" | "Expired" | "Processing" | "Expiring Soon";

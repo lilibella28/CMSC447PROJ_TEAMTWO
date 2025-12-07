@@ -9,18 +9,18 @@ export type VisaStatus = "Active" | "Pending" | "Expired" | "Processing" | "Expi
 
 /**
  * Calculate the current visa status based on expiration date and pending applications
- * @param expiration_date - The visa expiration date
+ * @param expirationDate - The visa expiration date
  * @param hasPendingApplication - Whether there's a pending visa application
  * @returns The calculated visa status
  */
 export function calculateVisaStatus(
-  expiration_date: string,
+  expirationDate: string,
   hasPendingApplication: boolean = false
 ): VisaStatus {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
   
-  const expDate = new Date(expiration_date);
+  const expDate = new Date(expirationDate);
   expDate.setHours(0, 0, 0, 0);
   
   const daysUntilExpiration = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -55,14 +55,14 @@ export function calculateVisaStatus(
 
 /**
  * Calculate days remaining until expiration
- * @param expiration_date - The visa expiration date
+ * @param expirationDate - The visa expiration date
  * @returns Number of days until expiration (negative if expired)
  */
-export function calculateDaysRemaining(expiration_date: string): number {
+export function calculateDaysRemaining(expirationDate: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  const expDate = new Date(expiration_date);
+  const expDate = new Date(expirationDate);
   expDate.setHours(0, 0, 0, 0);
   
   return Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -112,8 +112,8 @@ export function getStatusBadgeVariant(status: VisaStatus): "default" | "secondar
  */
 export function getEmployeeWithComputedStatus(employee: EmployeeData): EmployeeData & { computedStatus: VisaStatus; daysRemaining: number } {
   const hasPendingApplication = !!employee.pendingVisaApplication;
-  const computedStatus = calculateVisaStatus(employee.expiration_date, hasPendingApplication);
-  const daysRemaining = calculateDaysRemaining(employee.expiration_date);
+  const computedStatus = calculateVisaStatus(employee.expirationDate, hasPendingApplication);
+  const daysRemaining = calculateDaysRemaining(employee.expirationDate);
   
   return {
     ...employee,
@@ -180,4 +180,28 @@ export function formatDaysRemaining(days: number): string {
   if (years === 1) return `Expires in 1 year, ${months} month${months !== 1 ? 's' : ''}`;
   if (months === 0) return `Expires in ${years} years`;
   return `Expires in ${years} years, ${months} month${months !== 1 ? 's' : ''}`;
+}
+
+/**
+ * Check if a visa is expired (highest priority)
+ * @param expirationDate - The visa expiration date
+ * @returns True if the visa has expired, false otherwise
+ */
+export function isVisaExpired(expirationDate: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const expDate = new Date(expirationDate);
+  expDate.setHours(0, 0, 0, 0);
+  
+  return expDate < today;
+}
+
+/**
+ * Check if a visa requires highest priority attention
+ * @param status - The visa status
+ * @returns True if the visa is expired and requires highest priority
+ */
+export function isHighestPriority(status: VisaStatus): boolean {
+  return status === "Expired";
 }

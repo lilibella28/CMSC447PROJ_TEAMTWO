@@ -1,26 +1,47 @@
-import { Search, Bell, User, LogOut, Menu, X, LayoutDashboard, Users, Building2, FileText, Settings } from "lucide-react";
+import { Search, Bell, User, LogOut, Menu, X, LayoutDashboard, Users, Building2, FileText, Settings, UserCog } from "lucide-react";
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
+import { UserSwitcher } from "./UserSwitcher";
+import { User as UserType } from "../../utils/roles";
+import { Badge } from "./ui/badge";
+import { getRoleDisplayName, getRoleBadgeColor } from "../../utils/roles";
 
 interface TopNavProps {
   onLogout?: () => void;
   currentPage?: string;
   onNavigate?: (page: string) => void;
+  currentUser?: UserType | null;
+  onSwitchUser?: (user: UserType) => void;
 }
 
-export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopNavProps) {
+export function TopNav({ onLogout, currentPage = "dashboard", onNavigate, currentUser, onSwitchUser }: TopNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", page: "dashboard", active: currentPage === "dashboard" },
-    { icon: Users, label: "Employees", page: "employees", active: currentPage === "employees" },
-    { icon: Building2, label: "Departments", page: "departments", active: currentPage === "departments" },
-    { icon: FileText, label: "Reports", page: "reports", active: currentPage === "reports" },
-    { icon: Settings, label: "Settings", page: "settings", active: currentPage === "settings" },
-  ];
+  // Filter navigation items based on user role
+  const getNavItems = () => {
+    const allNavItems = [
+      { icon: LayoutDashboard, label: "Dashboard", page: "dashboard", active: currentPage === "dashboard", roles: ["administrator", "assistant"] },
+      { icon: Users, label: "Employees", page: "employees", active: currentPage === "employees", roles: ["administrator", "assistant"] },
+      { icon: Building2, label: "Departments", page: "departments", active: currentPage === "departments", roles: ["administrator"] },
+      { icon: FileText, label: "Reports", page: "reports", active: currentPage === "reports", roles: ["administrator"] },
+      { icon: Settings, label: "Settings", page: "settings", active: currentPage === "settings", roles: ["administrator"] },
+    ];
+
+    // Employee role has their own view, so no nav items
+    if (currentUser?.role === "viewer") {
+      return [];
+    }
+
+    // Filter based on current user role
+    return allNavItems.filter(item => 
+      !currentUser || item.roles.includes(currentUser.role)
+    );
+  };
+
+  const navItems = getNavItems();
 
   const handleNavClick = (e: React.MouseEvent, page: string) => {
     e.preventDefault();
@@ -48,12 +69,13 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopN
             <h1 className="text-xl font-semibold text-black">UMBC</h1>
             <div className="h-0.5 w-8 bg-[#FFCC00]"></div>
           </div>
-          <span className="text-neutral-gray-500 hidden sm:inline">Global Center for Global Engagement </span>
+          <span className="text-neutral-gray-500 hidden sm:inline">Admin Dashboard</span>
         </div>
 
         {/* Right side - Search, Notifications, Profile */}
         <div className="flex items-center space-x-2 md:space-x-4">
           <div className="relative hidden lg:block">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-gray-500 h-4 w-4" />
             <Input 
               placeholder="Search..." 
               className="pl-10 w-64 bg-input-background border-neutral-gray-200"
@@ -77,6 +99,30 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate }: TopN
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {currentUser?.name || 'User'}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {currentUser?.email || ''}
+                  </p>
+                  {currentUser?.role && (
+                    <Badge className={`${getRoleBadgeColor(currentUser.role)} mt-1 w-fit text-xs`}>
+                      {getRoleDisplayName(currentUser.role)}
+                    </Badge>
+                  )}
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {onSwitchUser && (
+                <>
+                  <div className="p-2">
+                    <UserSwitcher currentUser={currentUser} onSwitchUser={onSwitchUser} />
+                  </div>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>

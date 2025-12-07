@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
-import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
   Table,
   TableBody,
@@ -18,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Search, Eye, Edit2, ChevronLeft, ChevronRight, Users, Upload, Plus, AlertCircle, RefreshCw, Mail } from "lucide-react";
+import { Search, Eye, Edit2, ChevronLeft, ChevronRight, Users, Upload, Plus, AlertCircle, RefreshCw, Mail, Trash2 } from "lucide-react";
 import { fetchVisaCases, VisaCase } from "../../utils/dataService";
 import { Card } from "./ui/card";
 import {
@@ -26,22 +25,40 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "./ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { User } from "../../utils/roles";
+import { toast } from "sonner";
 
 interface EmployeesProps {
   onViewEmployee?: (employee: VisaCase) => void;
   onNavigateToAddEmployee?: () => void;
   onNavigateToImport?: () => void;
   onEditEmployee?: (employee: VisaCase) => void;
+  onDeleteEmployee?: (employee: VisaCase) => void;
+  currentUser?: User;
 }
 
-export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateToImport, onEditEmployee }: EmployeesProps) {
+export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateToImport, onEditEmployee, onDeleteEmployee, currentUser }: EmployeesProps) {
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [visa_typeFilter, setvisa_typeFilter] = useState("all");
+  const [visaTypeFilter, setVisaTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [employees, setEmployees] = useState<VisaCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Delete dialog state
+  const [employeeToDelete, setEmployeeToDelete] = useState<VisaCase | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,6 +147,14 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
 
   // Filter employees based on search and filters
   const filteredEmployees = employees.filter((employee) => {
+    // Role-based filtering: Assistants only see assigned employees
+    if (currentUser?.role === 'manager' && currentUser.assignedEmployees) {
+      const isAssigned = currentUser.assignedEmployees.includes(employee.id);
+      if (!isAssigned) {
+        return false;
+      }
+    }
+
     // Search filter (name or email)
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
@@ -143,16 +168,16 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
       employee.employee.department === departmentFilter;
 
     // Visa type filter
-    const matchesvisa_type =
-      visa_typeFilter === "all" ||
-      employee.visa_type === visa_typeFilter;
+    const matchesVisaType =
+      visaTypeFilter === "all" ||
+      employee.visa_type === visaTypeFilter;
 
     // Status filter
     const matchesStatus =
       statusFilter === "all" ||
       employee.status === statusFilter;
 
-    return matchesSearch && matchesDepartment && matchesvisa_type && matchesStatus;
+    return matchesSearch && matchesDepartment && matchesVisaType && matchesStatus;
   });
 
   // Get status priority for sorting (lower number = higher priority)
@@ -197,26 +222,16 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, departmentFilter, visa_typeFilter, statusFilter]);
+  }, [searchQuery, departmentFilter, visaTypeFilter, statusFilter]);
 
   // Get unique values for filter dropdowns
   const allDepartments = Array.isArray(employees) ? Array.from(
     new Set(employees.map((emp) => emp.employee.department))
   ).sort() : [];
 
-  const allvisa_types = Array.isArray(employees) ? Array.from(
+  const allVisaTypes = Array.isArray(employees) ? Array.from(
     new Set(employees.map((emp) => emp.visa_type))
   ).sort() : [];
-
-  // Get initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  };
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -276,13 +291,13 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
               </Select>
 
               {/* Visa Type Filter */}
-              <Select value={visa_typeFilter} onValueChange={setvisa_typeFilter}>
+              <Select value={visaTypeFilter} onValueChange={setVisaTypeFilter}>
                 <SelectTrigger className="w-full lg:w-[180px] h-10 bg-white border-[#E1E1E1] rounded-lg">
                   <SelectValue placeholder="Visa Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Visa Types</SelectItem>
-                  {allvisa_types.map((type) => (
+                  {allVisaTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
                     </SelectItem>
@@ -332,7 +347,7 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
                   onClick={() => {
                     setSearchQuery("");
                     setDepartmentFilter("all");
-                    setvisa_typeFilter("all");
+                    setVisaTypeFilter("all");
                     setStatusFilter("all");
                   }}
                 >
@@ -455,6 +470,18 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
                             >
                               <Mail className="h-4 w-4" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-[#5B8DEF] hover:text-[#4A7DD8] hover:bg-[#E9F2FF]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEmployeeToDelete(employee);
+                                setShowDeleteDialog(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -538,8 +565,31 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
           </>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the employee record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (employeeToDelete) {
+                  onDeleteEmployee?.(employeeToDelete);
+                  toast.success("Employee deleted successfully!");
+                }
+                setShowDeleteDialog(false);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  );
-}
-
-
+  );}

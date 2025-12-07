@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import { Separator } from "./ui/separator";
 import { Eye, EyeOff } from "lucide-react";
+import { User } from "../../utils/roles";
+import { DEMO_USERS } from "./UserSwitcher";
 
 interface LoginProps {
-  onLogin: (success: boolean) => void;
+  onLogin: (success: boolean, user?: User) => void;
 }
 
 export function Login({ onLogin }: LoginProps) {
@@ -23,41 +25,75 @@ export function Login({ onLogin }: LoginProps) {
     general?: string;
   }>({});
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   setErrors({});
+
+  //   // Validate form
+  //   const newErrors: { email?: string; password?: string; general?: string } = {};
+    
+  //   if (!email) {
+  //     newErrors.email = "Email is required";
+  //   } else if (!/\S+@\S+\.\S+/.test(email)) {
+  //     newErrors.email = "Please enter a valid email";
+  //   }
+
+  //   if (!password) {
+  //     newErrors.password = "Password is required";
+  //   }
+
+  //   if (Object.keys(newErrors).length > 0) {
+  //     setErrors(newErrors);
+  //     setIsLoading(false);
+  //     return;
+  //   }
+
+  //   // Test credentials check
+  //   setTimeout(() => {
+  //     const user = DEMO_USERS.find(u => u.email === email && u.password === password);
+  //     if (user) {
+  //       onLogin(true, user);
+  //     } else {
+  //       setErrors({
+  //         general: `Invalid email or password. Demo accounts:\n• admin@umbc.edu / admin123 (Administrator)\n• assistant@umbc.edu / assistant123 (Assistant)\n• laura.smith@umbc.edu / employee123 (Employee)`
+  //       });
+  //     }
+  //     setIsLoading(false);
+  //   }, 1500);
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
-
-    // Validate form
-    const newErrors: { email?: string; password?: string; general?: string } = {};
-    
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setIsLoading(false);
-      return;
-    }
-
-    // Test credentials check
-    setTimeout(() => {
-      if (email === "admin@test.com" && password === "password123") {
-        onLogin(true);
-      } else {
-        setErrors({
-          general: "Invalid email or password. Use admin@test.com / password123 for testing."
-        });
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          username: email,    // user can enter email OR username
+          password,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        setErrors({ general: data.error || "Invalid username or password" });
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
-    }, 1500);
+  
+      // Backend returns full user object in: data.user
+      onLogin(true, data.user); 
+    } catch (err) {
+      setErrors({ general: "Server unavailable. Is backend running?" });
+    }
+  
+    setIsLoading(false);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +122,7 @@ export function Login({ onLogin }: LoginProps) {
           
           {/* Sign In Title */}
           <h2 className="text-lg font-semibold text-center text-foreground">
-            Sign in  to Center for Global Engagement
+            Sign in to Visa Dashboard
           </h2>
         </CardHeader>
 
@@ -94,7 +130,7 @@ export function Login({ onLogin }: LoginProps) {
           {/* General Error Message */}
           {errors.general && (
             <div className="bg-[#FEF2F2] border border-[#FCA5A5] rounded-lg p-3">
-              <p className="text-sm text-[#EF4444]">{errors.general}</p>
+              <p className="text-sm text-[#EF4444] whitespace-pre-line">{errors.general}</p>
             </div>
           )}
           

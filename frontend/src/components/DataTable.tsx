@@ -9,7 +9,7 @@ import {
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Mail, Eye, Clock, AlertCircle } from "lucide-react";
-import { VisaCase } from "../utils/dataService";
+import { VisaCase } from "../../utils/dataService";
 import {
   Tooltip,
   TooltipContent,

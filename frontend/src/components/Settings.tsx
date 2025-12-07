@@ -70,9 +70,9 @@ interface AdminUser {
 }
 
 const initialAdmins: AdminUser[] = [
-  { id: "1", name: "Sarah Martinez", email: "admin@umbc.edu", role: "administrator" },
-  { id: "2", name: "Michael Chen", email: "assistant@umbc.edu", role: "assistant", assignedEmployees: ["1", "2", "3"] },
-  { id: "3", name: "John Smith", email: "john.smith@umbc.edu", role: "employee", employeeProfileId: "1" },
+  { id: "1", name: "Sarah Martinez", email: "admin@umbc.edu", role: "admin" },
+  { id: "2", name: "Michael Chen", email: "manager@umbc.edu", role: "manager", assignedEmployees: ["1", "2", "3"] },
+  { id: "3", name: "John Smith", email: "john.smith@umbc.edu", role: "viewer", employeeProfileId: "1" },
 ];
 
 // Mock employee data type
@@ -84,22 +84,44 @@ interface Employee {
 }
 
 // Mock fetch employees function
+// Fetch employees from backend
 const fetchEmployees = async (): Promise<Employee[]> => {
-  return [
-    { id: "1", name: "John Smith", email: "john.smith@umbc.edu", department: "Computer Science" },
-    { id: "2", name: "Maria Garcia", email: "maria.garcia@umbc.edu", department: "Engineering" },
-    { id: "3", name: "David Lee", email: "david.lee@umbc.edu", department: "Biology" },
-  ];
+  try {
+    const response = await fetch("http://127.0.0.1:5000/api/employees/", {
+      method: "GET",
+      credentials: "include",   // include cookies/session
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch employees", response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    // Convert backend naming → frontend naming if needed
+    return data.map((emp: any) => ({
+      id: String(emp.id),
+      name: `${emp.first_name} ${emp.last_name}`, 
+      email: emp.email,
+    }));
+  } catch (error) {
+    console.error("Error fetching employees:", error);
+    return [];
+  }
 };
 
 // Helper function to get role description
 const getRoleDescription = (role: UserRole): string => {
   switch (role) {
-    case 'administrator':
+    case 'admin':
       return 'Full system access including user management and all employees';
-    case 'assistant':
+    case 'manager':
       return 'Limited access to assigned employees only';
-    case 'employee':
+    case 'viewer':
       return 'Can only view their own employee profile (read-only)';
   }
 };
@@ -115,7 +137,7 @@ export function Settings() {
   const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
   const [newAdminName, setNewAdminName] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
-  const [newAdminRole, setNewAdminRole] = useState<UserRole>("administrator");
+  const [newAdminRole, setNewAdminRole] = useState<UserRole>("admin");
   const [newAdminAssignedEmployees, setNewAdminAssignedEmployees] = useState<string[]>([]);
   const [newAdminEmployeeProfileId, setNewAdminEmployeeProfileId] = useState("");
   const [adminToRemove, setAdminToRemove] = useState<string | null>(null);
@@ -183,12 +205,12 @@ export function Settings() {
     }
 
     // Validate role-specific requirements
-    if (newAdminRole === 'assistant' && newAdminAssignedEmployees.length === 0) {
+    if (newAdminRole === 'manager' && newAdminAssignedEmployees.length === 0) {
       toast.error("Assistants must be assigned to at least one employee");
       return;
     }
 
-    if (newAdminRole === 'employee') {
+    if (newAdminRole === 'viewer') {
       // Auto-match employee profile by email
       const matchingEmployee = employees.find(
         emp => emp.email.toLowerCase() === newAdminEmail.toLowerCase()
@@ -214,14 +236,14 @@ export function Settings() {
     setAdmins([...admins, newAdmin]);
     setNewAdminName("");
     setNewAdminEmail("");
-    setNewAdminRole("administrator");
+    setNewAdminRole("admin");
     setNewAdminAssignedEmployees([]);
     setNewAdminEmployeeProfileId("");
     setIsAddAdminOpen(false);
     
     toast.success("User created successfully!", {
       description: `${newAdminName} has been added as ${getRoleDisplayName(newAdminRole)}.${
-        newAdminRole === 'employee' ? ' They can now log in to view their profile.' : ''
+        newAdminRole === 'viewer' ? ' They can now log in to view their profile.' : ''
       }`,
       duration: 3000,
     });
@@ -249,12 +271,12 @@ export function Settings() {
     }
 
     // Validate role-specific requirements
-    if (newAdminRole === 'assistant' && newAdminAssignedEmployees.length === 0) {
+    if (newAdminRole === 'manager' && newAdminAssignedEmployees.length === 0) {
       toast.error("Assistants must be assigned to at least one employee");
       return;
     }
 
-    if (newAdminRole === 'employee') {
+    if (newAdminRole === 'viewer') {
       // Auto-match employee profile by email
       const matchingEmployee = employees.find(
         emp => emp.email.toLowerCase() === newAdminEmail.toLowerCase()
@@ -275,8 +297,8 @@ export function Settings() {
           name: newAdminName,
           email: newAdminEmail,
           role: newAdminRole,
-          assignedEmployees: newAdminRole === 'assistant' ? newAdminAssignedEmployees : undefined,
-          employeeProfileId: newAdminRole === 'employee' ? newAdminEmployeeProfileId : undefined,
+          assignedEmployees: newAdminRole === 'manager' ? newAdminAssignedEmployees : undefined,
+          employeeProfileId: newAdminRole === 'viewer' ? newAdminEmployeeProfileId : undefined,
         };
       }
       return admin;
@@ -286,7 +308,7 @@ export function Settings() {
     setEditingAdminId(null);
     setNewAdminName("");
     setNewAdminEmail("");
-    setNewAdminRole("administrator");
+    setNewAdminRole("admin");
     setNewAdminAssignedEmployees([]);
     setNewAdminEmployeeProfileId("");
     setIsAddAdminOpen(false);
@@ -303,7 +325,7 @@ export function Settings() {
     setEditingAdminId(null);
     setNewAdminName("");
     setNewAdminEmail("");
-    setNewAdminRole("administrator");
+    setNewAdminRole("admin");
     setNewAdminAssignedEmployees([]);
     setNewAdminEmployeeProfileId("");
   };
@@ -547,13 +569,13 @@ export function Settings() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="administrator">
+                          <SelectItem value="admin">
                             <div className="flex items-center gap-2">
                               <Shield className="h-4 w-4 text-[#5B8DEF]" />
                               <span>UMBC Administrator</span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="assistant">
+                          <SelectItem value="manager">
                             <div className="flex items-center gap-2">
                               <Users className="h-4 w-4 text-[#EFB74A]" />
                               <span>Assistant</span>
@@ -573,7 +595,7 @@ export function Settings() {
                     </div>
 
                     {/* Assistant-specific: Assign Employees */}
-                    {newAdminRole === 'assistant' && (
+                    {newAdminRole === 'manager' && (
                       <div className="space-y-2">
                         <Label>Assign Employees *</Label>
                         <Card className="border-[#E5E5E5] p-4 max-h-[200px] overflow-y-auto">
@@ -617,7 +639,7 @@ export function Settings() {
                     )}
 
                     {/* Employee role info - automatic profile linking */}
-                    {newAdminRole === 'employee' && (
+                    {newAdminRole === 'viewer' && (
                       <Card className="border-[#5B8DEF] bg-[#E9F2FF] p-4">
                         <div className="flex items-start gap-3">
                           <div className="p-2 bg-[#5B8DEF] rounded-lg">
@@ -672,7 +694,7 @@ export function Settings() {
                       <Badge className={getRoleBadgeColor(admin.role)}>
                         {getRoleDisplayName(admin.role)}
                       </Badge>
-                      {admin.role === 'assistant' && admin.assignedEmployees && (
+                      {admin.role === 'manager' && admin.assignedEmployees && (
                         <Badge variant="outline" className="border-[#EFB74A] text-[#EFB74A]">
                           {admin.assignedEmployees.length} employees
                         </Badge>

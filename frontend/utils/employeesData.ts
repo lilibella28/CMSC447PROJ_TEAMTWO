@@ -67,7 +67,7 @@ export const employeesData: EmployeeData[] = [
     soc_code: "19-2012.00",
     soc_code_description: "Physicists",
     general_notes: "Needs travel signature update",
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2020-05-01",
         amount: 75000,
@@ -135,7 +135,7 @@ export const employeesData: EmployeeData[] = [
     soc_code: "25-1126",
     soc_code_description: "Philosophy Teachers, Postsecondary",
     general_notes: "Currently in first visa cycle",
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2024-04-01",
         amount: 82000,
@@ -189,7 +189,7 @@ export const employeesData: EmployeeData[] = [
     soc_code: "15-1132.00",
     soc_code_description: "Software Developers, Applications",
     general_notes: "Transitioned to PR",
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2018-02-15",
         amount: 85000,
@@ -280,7 +280,7 @@ export const employeesData: EmployeeData[] = [
     soc_code: "17-2199.00",
     soc_code_description: "Engineers, All Other",
     general_notes: "Travel restriction lifted",
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2019-06-01",
         amount: 72000,
@@ -356,7 +356,7 @@ export const employeesData: EmployeeData[] = [
     soc_code: "43-6014.00",
     soc_code_description: "Secretaries and Administrative Assistants",
     general_notes: "Awaiting project funding",
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2023-03-01",
         amount: 63500,
@@ -395,7 +395,7 @@ export const employeesData: EmployeeData[] = [
       notes: "Applied for OPT following F-1 graduation. Awaiting USCIS review.",
       filed_by: "Self-Petition"
     },
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2023-08-15",
         amount: 52000,
@@ -449,7 +449,7 @@ export const employeesData: EmployeeData[] = [
       notes: "H-1B cap petition filed in FY2025 lottery. Awaiting selection results and approval.",
       filed_by: "Attorney"
     },
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2023-05-20",
         amount: 68000,
@@ -511,7 +511,7 @@ export const employeesData: EmployeeData[] = [
       notes: "EB-2 Green Card application filed. PERM Labor Certification approved. I-140 petition under review.",
       filed_by: "Attorney"
     },
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2022-01-10",
         amount: 62000,
@@ -571,7 +571,7 @@ export const employeesData: EmployeeData[] = [
       notes: "H-1B petition approved. Transition from OPT STEM to H-1B status effective October 1, 2024.",
       filed_by: "Attorney"
     },
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2023-02-14",
         amount: 55000,
@@ -608,7 +608,7 @@ export const employeesData: EmployeeData[] = [
     visaFiledBy: "Self-Petition",
     number_of_dependents: 0,
     number_of_dependentsDetails: [],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2024-01-05",
         amount: 48000,
@@ -656,7 +656,7 @@ export const employeesData: EmployeeData[] = [
       notes: "EB-3 Green Card application in progress. I-140 approved, I-485 Adjustment of Status pending.",
       filed_by: "Attorney"
     },
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2021-06-15",
         amount: 72000,
@@ -705,7 +705,7 @@ export const employeesData: EmployeeData[] = [
     visaFiledBy: "UMBC Administrator",
     number_of_dependents: 0,
     number_of_dependentsDetails: [],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2023-07-22",
         amount: 54000,
@@ -742,7 +742,7 @@ export const employeesData: EmployeeData[] = [
     visaFiledBy: "Self-Petition",
     number_of_dependents: 0,
     number_of_dependentsDetails: [],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2024-03-01",
         amount: 46000,
@@ -782,7 +782,7 @@ export const employeesData: EmployeeData[] = [
         passportNumber: "UA234568"
       }
     ],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2023-04-10",
         amount: 58000,
@@ -836,7 +836,7 @@ export const employeesData: EmployeeData[] = [
         passportNumber: "US234567"
       }
     ],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2020-08-01",
         amount: 70000,
@@ -916,7 +916,7 @@ export const employeesData: EmployeeData[] = [
         passportNumber: "US456789"
       }
     ],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2019-11-15",
         amount: 55000,
@@ -988,7 +988,7 @@ export const employeesData: EmployeeData[] = [
         passportNumber: "US567890"
       }
     ],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2018-03-10",
         amount: 65000,
@@ -1052,7 +1052,7 @@ export const employeesData: EmployeeData[] = [
         passportNumber: "AR678902"
       }
     ],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2022-07-01",
         amount: 60000,
@@ -1095,7 +1095,7 @@ export const employeesData: EmployeeData[] = [
     visaFiledBy: "Self-Petition",
     number_of_dependents: 0,
     number_of_dependentsDetails: [],
-    salaryHistory: [
+    salary_history: [
       {
         effectiveDate: "2024-06-01",
         amount: 47000,

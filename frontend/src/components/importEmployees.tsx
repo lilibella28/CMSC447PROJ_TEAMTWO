@@ -521,7 +521,7 @@ export function ImportEmployees() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() => window.location.href = "#dashboard"}
+                  onClick={() => window.location.href = "/dashboard"}
                   className="bg-[#5B8DEF] hover:bg-[#4A7DD8] text-white flex-1 sm:flex-none"
                 >
                   View All Cases

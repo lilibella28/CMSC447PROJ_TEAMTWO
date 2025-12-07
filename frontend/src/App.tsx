@@ -3,17 +3,18 @@ import { AppShell } from "./components/AppShell";
 import { Dashboard } from "./components/Dashboard";
 import { Login } from "./components/Login";
 import { AddEmployee } from "./components/AddEmployee";
+import { fetchEmployees, deleteEmployee } from "../utils/dataService";
 import { EditEmployee } from "./components/EditEmployee";
 import { Employees } from "./components/Employees";
 import { EmployeeProfile } from "./components/EmployeeProfile";
 import { Departments } from "./components/Deparments";
-import { ImportEmployees } from "./components/importEmployees";
+import { ImportEmployees } from "./components/ImportEmployees";
 import { Reports } from "./components/Reports";
 import { Settings } from "./components/Settings";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import { VisaCase } from "../utils/dataService";
-
+import { MissingDatesProvider } from "./contexts/MissingDatesContext";
 type Page = "dashboard" | "add-employee" | "edit-employee" | "employees" | "employee-profile" | "reports" | "departments" | "import" | "settings";
 
 export default function App() {
@@ -62,6 +63,40 @@ export default function App() {
     setSelectedEmployee(employee);
     setCurrentPage("edit-employee");
   };
+
+  const handleDeleteEmployee = async (employeeId: string) => {
+    try {
+      console.log("Deleting employee:", employeeId);
+  
+      const success = await deleteEmployee(employeeId);
+  
+      if (!success) {
+        toast.error("Failed to delete employee.", {
+          description: "The server could not delete this record.",
+        });
+        return;
+      }
+  
+      // Save name BEFORE clearing state
+      const deletedEmployeeName = selectedEmployee?.employee?.name || "Employee";
+  
+      // Clear selection and navigate back
+      setSelectedEmployee(null);
+      setCurrentPage("employees");
+  
+      toast.success("Employee deleted successfully!", {
+        description: `${deletedEmployeeName} has been removed from the system.`,
+        duration: 4000,
+      });
+  
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+      toast.error("Failed to delete employee", {
+        description: "An unexpected error occurred.",
+      });
+    }
+  };
+  
 
   const handleSaveEmployee = (employeeData: any) => {
     console.log("Employee data saved:", employeeData);
@@ -116,6 +151,7 @@ export default function App() {
             onNavigateToAddEmployee={handleNavigateToAddEmployee}
             onNavigateToImport={handleNavigateToImport}
             onEditEmployee={handleEditEmployee}
+            onDeleteEmployee={handleDeleteEmployee}
           />
         );
       case "employee-profile":
@@ -125,6 +161,7 @@ export default function App() {
             employee={selectedEmployee}
             onBack={handleBackFromProfile}
             onEdit={() => handleEditEmployee(selectedEmployee)}
+            onDelete={(id: string) => handleDeleteEmployee(id)}
           />
         );
       case "departments":
@@ -138,12 +175,15 @@ export default function App() {
       case "dashboard":
       default:
         return (
+
+          <MissingDatesProvider>
           <Dashboard 
             onNavigateToAddEmployee={handleNavigateToAddEmployee}
             onNavigateToImport={handleNavigateToImport}
             onViewEmployee={handleViewEmployee}
             onEditEmployee={handleEditEmployee}
           />
+          </MissingDatesProvider>
         );
     }
   };

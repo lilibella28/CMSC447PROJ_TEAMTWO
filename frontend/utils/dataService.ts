@@ -74,6 +74,7 @@ export type { Dependent, PendingVisaApplication };
 export interface VisaCase {
   id: string;
   employee: {
+    id(id: any): unknown;
     name: string;
     department: string;
     email?: string;
@@ -89,14 +90,6 @@ export interface VisaCase {
   pendingTargetvisa_type?: string;
 }
 
-// Calculate days left until expiration
-function calculateDaysLeft(expiration_date: string): number {
-  const today = new Date();
-  const expDate = new Date(expiration_date);
-  const diffTime = expDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-}
 
 // Convert Employee to VisaCase format
 function employeeToVisaCase(employee: Employee): VisaCase {
@@ -176,6 +169,23 @@ export async function fetchEmployees(): Promise<Employee[]> {
   }
 }
 
+export async function fetchUsers() {
+  const res = await fetch("http://localhost:5000/api/auth/users", {
+    method: "GET",
+    credentials: "include",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to load users");
+  }
+
+  return data.users;
+}
+
+
+
 
 /**
  * Fetch single employee by ID
@@ -252,24 +262,28 @@ export async function updateEmployee(id: string, employeeData: Partial<Employee>
 
 
 /**
- * Delete employee
- * TODO: Replace with API call to: DELETE /api/employees/:id
+ * Delete employee using backend API
+ * DELETE /api/employees/:id
  */
 export async function deleteEmployee(id: string): Promise<boolean> {
   try {
-    // Current implementation: Mock delete (doesn't persist to CSV)
-    console.log('Employee deleted (mock):', id);
+    const response = await fetch(`http://127.0.0.1:5000/api/employees/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to delete employee:", response.status);
+      return false;
+    }
+
     return true;
-    
-    // Future API implementation (commented out):
-    // const response = await fetch(`http://localhost:5000/api/employees/${id}`, {
-    //   method: 'DELETE',
-    // });
-    // return response.ok;
-    
   } catch (error) {
-    console.error('Error deleting employee:', error);
-    throw error;
+    console.error("Error deleting employee:", error);
+    return false;
   }
 }
 

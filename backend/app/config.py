@@ -8,7 +8,7 @@ class Config:
     # Example: PostgreSQL
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-        "postgresql://postgres:password@localhost:5432/visatracking"
+        "postgresql://postgres:password@localhost:5432/visa_db"
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False

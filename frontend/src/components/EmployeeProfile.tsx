@@ -23,6 +23,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+
 
 interface VisaHistory {
   id: string;
@@ -47,9 +58,11 @@ interface EmployeeProfileProps {
   employee: VisaCase;
   onBack: () => void;
   onEdit?: () => void;
+  onDelete?: (id: string) => void;
+  currentUser?: import("../../utils/roles").User;
 }
 
-export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfileProps) {
+export function EmployeeProfile({ employee, onBack, onEdit, onDelete }: EmployeeProfileProps) {
   const [fullEmployeeData, setFullEmployeeData] = useState<Employee | null>(null);
   const [notes, setNotes] = useState<CaseNote[]>([
    
@@ -63,6 +76,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
   const [editNoteText, setEditNoteText] = useState("");
   const [editNoteType, setEditNoteType] = useState<"General" | "Permanent Resident">("General");
   const [showAddVisaDialog, setShowAddVisaDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [openSections, setOpenSections] = useState({
     personal: true,
     employment: true,
@@ -268,12 +282,17 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
   const employeeDetails = {
     email: fullEmployeeData?.email || `${employee.employee.name.toLowerCase().replace(/\s+/g, ".")}@umbc.edu`,
     employeeId: `EMP-${employee.id.padStart(5, "0")}`,
-    jobTitle: fullEmployeeData?.employeeTitle || "Software Engineer",
+    jobTitle: fullEmployeeData?.employee_title || "Software Engineer",
     start_date : fullEmployeeData?.start_date  || "2022-01-15",
-    manager: fullEmployeeData?.departmentAdvisor || "Dr. Robert Smith",
+    manager: fullEmployeeData?.department_advisor || "Dr. Robert Smith",
     phone: fullEmployeeData?.phone || "+1 (410) 555-0123",
   };
 
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(employee.id);  // <-- Pass the ID as required
+    }
+  };
   return (
     <div className="max-w-[960px] mx-auto space-y-6">
       {/* Breadcrumb */}
@@ -296,10 +315,10 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
           <p className="text-neutral-gray-500 mt-1">
             {employeeDetails.jobTitle} — {employee.employee.department} Department
           </p>
-          {fullEmployeeData && fullEmployeeData.dependents > 0 && (
+          {fullEmployeeData && fullEmployeeData.number_of_dependents > 0 && (
             <p className="text-sm text-[#6B7280] mt-1 flex items-center">
               <Users className="h-4 w-4 mr-1" />
-              {fullEmployeeData.dependents} {fullEmployeeData.dependents === 1 ? 'Dependent' : 'Dependents'}
+              {fullEmployeeData.number_of_dependents} {fullEmployeeData.number_of_dependents === 1 ? 'Dependent' : 'Dependents'}
             </p>
           )}
         </div>
@@ -329,6 +348,15 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
             <Plus className="h-4 w-4 mr-2" />
             Add Note
           </Button>
+          <Button
+              variant="outline"
+              size="sm"
+              className="border-[#D86464] text-[#D86464] hover:bg-[#D86464]/10"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
         </div>
       </div>
 
@@ -366,7 +394,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                   <p className="text-sm text-[#6B7280] mt-1">
                     Transitioning from {employee.visa_type} to{" "}
                     <span className="font-medium text-black">
-                      {fullEmployeeData.pendingVisaApplication.targetVisa_type}
+                      {fullEmployeeData.pendingVisaApplication.targetvisa_type}
                     </span>
                   </p>
                 </div>
@@ -426,7 +454,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                 <div>
                   <label className="text-xs text-[#6B7280]">Filed By</label>
                   <p className="text-sm text-black mt-1 font-medium">
-                    {fullEmployeeData.pendingVisaApplication.filedBy}
+                    {fullEmployeeData.pendingVisaApplication.filed_by}
                   </p>
                 </div>
               </div>
@@ -480,12 +508,12 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     {employeeDetails.email}
                   </p>
                 </div>
-                {fullEmployeeData?.personalEmail && (
+                {fullEmployeeData?.personal_email && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Personal Email</label>
                     <p className="text-black mt-1 flex items-center">
                       <Mail className="h-4 w-4 mr-2 text-[#6B7280]" />
-                      {fullEmployeeData.personalEmail}
+                      {fullEmployeeData.personal_email}
                     </p>
                   </div>
                 )}
@@ -506,12 +534,12 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     <p className="text-black mt-1">{fullEmployeeData.gender}</p>
                   </div>
                 )}
-                {fullEmployeeData?.countryOfBirth && (
+                {fullEmployeeData?.country_of_birth && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Country of Birth</label>
                     <p className="text-black mt-1 flex items-center">
                       <Globe className="h-4 w-4 mr-2 text-[#6B7280]" />
-                      {fullEmployeeData.countryOfBirth}
+                      {fullEmployeeData.country_of_birth}
                     </p>
                   </div>
                 )}
@@ -521,10 +549,10 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     <p className="text-black mt-1">{fullEmployeeData.nationality}</p>
                   </div>
                 )}
-                {fullEmployeeData?.citizenships && fullEmployeeData.citizenships.length > 0 && (
+                {fullEmployeeData?.citizenship && fullEmployeeData.citizenship.length > 0 && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Citizenship(s)</label>
-                    <p className="text-black mt-1">{fullEmployeeData.citizenships.join(", ")}</p>
+                    <p className="text-black mt-1">{fullEmployeeData.citizenship.join(", ")}</p>
                   </div>
                 )}
                 {fullEmployeeData?.dateOfBirth && (
@@ -608,16 +636,16 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                   <label className="text-sm text-[#6B7280]">Job Title / Position</label>
                   <p className="text-black mt-1">{employeeDetails.jobTitle}</p>
                 </div>
-                {fullEmployeeData?.departmentAdmin && (
+                {fullEmployeeData?.department_admin && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Department Admin</label>
-                    <p className="text-black mt-1">{fullEmployeeData.departmentAdmin}</p>
+                    <p className="text-black mt-1">{fullEmployeeData.department_admin}</p>
                   </div>
                 )}
-                {fullEmployeeData?.departmentAdvisor && (
+                {fullEmployeeData?.department_advisor && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Department Advisor / PI / Chair</label>
-                    <p className="text-black mt-1">{fullEmployeeData.departmentAdvisor}</p>
+                    <p className="text-black mt-1">{fullEmployeeData.department_advisor}</p>
                   </div>
                 )}
                 <div>
@@ -627,12 +655,12 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                     {employeeDetails.start_date }
                   </p>
                 </div>
-                {fullEmployeeData?.annualSalary && (
+                {fullEmployeeData?.annual_salary && (
                   <div>
                     <label className="text-sm text-[#6B7280]">Annual Salary</label>
                     <p className="text-black mt-1 flex items-center">
                       <DollarSign className="h-4 w-4 mr-2 text-[#6B7280]" />
-                      ${fullEmployeeData.annualSalary.toLocaleString()}
+                      ${fullEmployeeData.annual_salary.toLocaleString()}
                     </p>
                   </div>
                 )}
@@ -671,23 +699,23 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                   </div>
                   <div>
                     <label className="text-sm text-[#6B7280]">Filed By</label>
-                    <p className="text-black mt-1">{fullEmployeeData?.visaFiledBy || employee.visaFiledBy}</p>
+                    <p className="text-black mt-1">{fullEmployeeData?.filed_by || employee.filed_by}</p>
                   </div>
-                  {fullEmployeeData?.caseType && (
+                  {fullEmployeeData?.case_type && (
                     <div>
                       <label className="text-sm text-[#6B7280]">Case Type</label>
-                      <p className="text-black mt-1">{fullEmployeeData.caseType}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.case_type}</p>
                     </div>
                   )}
                   <div>
                     <label className="text-sm text-[#6B7280]">Start Date</label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <p className={`text-black mt-1 ${isMissingDate(employee.visaStartDate) ? 'text-[#D86464] font-medium' : ''}`}>
-                          {formatDateWithFallback(employee.visaStartDate)}
+                        <p className={`text-black mt-1 ${isMissingDate(employee.visa_start_date) ? 'text-[#D86464] font-medium' : ''}`}>
+                          {formatDateWithFallback(employee.visa_start_date)}
                         </p>
                       </TooltipTrigger>
-                      {isMissingDate(employee.visaStartDate) && (
+                      {isMissingDate(employee.visa_start_date) && (
                         <TooltipContent>
                           <p>{getMissingDateTooltip()}</p>
                         </TooltipContent>
@@ -709,16 +737,16 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                       )}
                     </Tooltip>
                   </div>
-                  {fullEmployeeData?.initialH1BStartDate && (
+                  {fullEmployeeData?.initial_h1b_start_date && (
                     <div>
                       <label className="text-sm text-[#6B7280]">Initial H-1B Start Date</label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className={`text-black mt-1 ${isMissingDate(fullEmployeeData.initialH1BStartDate) ? 'text-[#D86464] font-medium' : ''}`}>
-                            {formatDateWithFallback(fullEmployeeData.initialH1BStartDate)}
+                          <p className={`text-black mt-1 ${isMissingDate(fullEmployeeData.initial_h1b_start_date) ? 'text-[#D86464] font-medium' : ''}`}>
+                            {formatDateWithFallback(fullEmployeeData.initial_h1b_start_date)}
                           </p>
                         </TooltipTrigger>
-                        {isMissingDate(fullEmployeeData.initialH1BStartDate) && (
+                        {isMissingDate(fullEmployeeData.initial_h1b_start_date) && (
                           <TooltipContent>
                             <p>{getMissingDateTooltip()}</p>
                           </TooltipContent>
@@ -726,7 +754,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                       </Tooltip>
                     </div>
                   )}
-                  {fullEmployeeData?.prepExtensionDate && (
+                  {fullEmployeeData?.prep_extension_date && (
                     <div>
                       <label className="text-sm text-[#6B7280] flex items-center gap-1">
                         Prep Extension Date
@@ -734,11 +762,11 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                       </label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className={`text-black mt-1 ${isMissingDate(fullEmployeeData.prepExtensionDate) ? 'text-[#D86464] font-medium' : ''}`}>
-                            {formatDateWithFallback(fullEmployeeData.prepExtensionDate)}
+                          <p className={`text-black mt-1 ${isMissingDate(fullEmployeeData.prep_extension_date) ? 'text-[#D86464] font-medium' : ''}`}>
+                            {formatDateWithFallback(fullEmployeeData.prep_extension_date)}
                           </p>
                         </TooltipTrigger>
-                        {isMissingDate(fullEmployeeData.prepExtensionDate) && (
+                        {isMissingDate(fullEmployeeData.prep_extension_date) && (
                           <TooltipContent>
                             <p>{getMissingDateTooltip()}</p>
                           </TooltipContent>
@@ -746,37 +774,37 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
                       </Tooltip>
                     </div>
                   )}
-                  {fullEmployeeData?.maxHPeriod && (
+                  {fullEmployeeData?.max_h_period && (
                     <div>
                       <label className="text-sm text-[#6B7280] flex items-center gap-1">
                         Max H Period End Date
                         <HelpTooltip text="The maximum period end date for H-1B visa" />
                       </label>
-                      <p className="text-black mt-1">{fullEmployeeData.maxHPeriod}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.max_h_period}</p>
                     </div>
                   )}
-                  {fullEmployeeData?.i94Number && (
+                  {fullEmployeeData?.i94_number && (
                     <div>
                       <label className="text-sm text-[#6B7280] flex items-center gap-1">
                         I-94 Number
                         <HelpTooltip text="The I-94 Arrival/Departure Record number" />
                       </label>
-                      <p className="text-black mt-1">{fullEmployeeData.i94Number}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.i94_number}</p>
                     </div>
                   )}
-                  {fullEmployeeData?.i94ExpiryDate && (
+                  {fullEmployeeData?.i94_expiry_date && (
                     <div>
                       <label className="text-sm text-[#6B7280] flex items-center gap-1">
                         I-94 Expiry Date
                         <HelpTooltip text="The expiration date shown on the I-94 record" />
                       </label>
-                      <p className="text-black mt-1">{fullEmployeeData.i94ExpiryDate}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.i94_expiry_date}</p>
                     </div>
                   )}
-                  {fullEmployeeData?.sevisId && (
+                  {fullEmployeeData?.sevis_id&& (
                     <div>
                       <label className="text-sm text-[#6B7280]">SEVIS ID</label>
-                      <p className="text-black mt-1">{fullEmployeeData.sevisId}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.sevis_id}</p>
                     </div>
                   )}
                 </div>
@@ -928,7 +956,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
       </Collapsible>
 
       {/* Education Section */}
-      {(fullEmployeeData?.highestEducation || fullEmployeeData?.fieldOfStudy) && (
+      {(fullEmployeeData?.highest_education || fullEmployeeData?.field_of_study) && (
         <Collapsible
           open={openSections.education}
           onOpenChange={() => toggleSection("education")}
@@ -948,16 +976,16 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
             <CollapsibleContent>
               <div className="px-6 pb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  {fullEmployeeData.highestEducation && (
+                  {fullEmployeeData.highest_education && (
                     <div>
                       <label className="text-sm text-[#6B7280]">Highest Educational Level</label>
-                      <p className="text-black mt-1">{fullEmployeeData.highestEducation}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.highest_education}</p>
                     </div>
                   )}
-                  {fullEmployeeData.fieldOfStudy && (
+                  {fullEmployeeData.field_of_study && (
                     <div>
                       <label className="text-sm text-[#6B7280]">Field of Study</label>
-                      <p className="text-black mt-1">{fullEmployeeData.fieldOfStudy}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.field_of_study}</p>
                     </div>
                   )}
                 </div>
@@ -968,7 +996,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
       )}
 
       {/* Administrative Fields Section */}
-      {(fullEmployeeData?.socCode || fullEmployeeData?.socCodeDescription || fullEmployeeData?.generalNotes) && (
+      {(fullEmployeeData?.soc_code|| fullEmployeeData?.soc_code_description|| fullEmployeeData?.general_notes) && (
         <Collapsible
           open={openSections.administrative}
           onOpenChange={() => toggleSection("administrative")}
@@ -988,25 +1016,25 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
             <CollapsibleContent>
               <div className="px-6 pb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  {fullEmployeeData.socCode && (
+                  {fullEmployeeData.soc_code && (
                     <div>
                       <label className="text-sm text-[#6B7280] flex items-center gap-1">
                         SOC Code
                         <HelpTooltip text="Standard Occupational Classification code for USCIS reporting" />
                       </label>
-                      <p className="text-black mt-1">{fullEmployeeData.socCode}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.soc_code}</p>
                     </div>
                   )}
-                  {fullEmployeeData.socCodeDescription && (
+                  {fullEmployeeData.soc_code_description  && (
                     <div>
                       <label className="text-sm text-[#6B7280]">SOC Code Description</label>
-                      <p className="text-black mt-1">{fullEmployeeData.socCodeDescription}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.soc_code_description }</p>
                     </div>
                   )}
-                  {fullEmployeeData.generalNotes && (
+                  {fullEmployeeData.general_notes&& (
                     <div className="md:col-span-2">
                       <label className="text-sm text-[#6B7280]">General Notes</label>
-                      <p className="text-black mt-1">{fullEmployeeData.generalNotes}</p>
+                      <p className="text-black mt-1">{fullEmployeeData.general_notes}</p>
                     </div>
                   )}
                 </div>
@@ -1078,7 +1106,7 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
       )}
 
       {/* Salary Progression */}
-      {fullEmployeeData && fullEmployeeData.salaryHistory && fullEmployeeData.salaryHistory.length > 0 && (
+      {fullEmployeeData && fullEmployeeData.salary_history && fullEmployeeData.salary_history.length > 0 && (
         <Card className="p-6 border border-[#E5E7EB]">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-black flex items-center">
@@ -1088,19 +1116,19 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
             <div className="text-right">
               <p className="text-sm text-[#6B7280]">Current Salary</p>
               <p className="text-xl font-semibold text-black">
-                ${fullEmployeeData.salaryHistory[fullEmployeeData.salaryHistory.length - 1].amount.toLocaleString()}
+                ${fullEmployeeData.salary_history[fullEmployeeData.salary_history.length - 1].amount.toLocaleString()}
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {fullEmployeeData.salaryHistory
+            {fullEmployeeData.salary_history
               .slice()
               .reverse()
               .map((record, index) => {
                 const isLatest = index === 0;
-                const previousSalary = index < fullEmployeeData.salaryHistory.length - 1 
-                  ? fullEmployeeData.salaryHistory[fullEmployeeData.salaryHistory.length - 1 - index - 1].amount 
+                const previousSalary = index < fullEmployeeData.salary_history.length - 1 
+                  ? fullEmployeeData.salary_history[fullEmployeeData.salary_history.length - 1 - index - 1].amount 
                   : null;
                 const salaryIncrease = previousSalary ? record.amount - previousSalary : null;
                 const percentageIncrease = previousSalary ? ((salaryIncrease! / previousSalary) * 100).toFixed(1) : null;
@@ -1151,29 +1179,29 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
           </div>
 
           {/* Summary Stats */}
-          {fullEmployeeData.salaryHistory.length > 1 && (
+          {fullEmployeeData.salary_history.length > 1 && (
             <>
               <Separator className="my-6" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F9FAFB] rounded-lg">
                 <div>
                   <label className="text-xs text-[#6B7280]">Starting Salary</label>
                   <p className="text-lg font-semibold text-black">
-                    ${fullEmployeeData.salaryHistory[0].amount.toLocaleString()}
+                    ${fullEmployeeData.salary_history[0].amount.toLocaleString()}
                   </p>
                 </div>
                 <div>
                   <label className="text-xs text-[#6B7280]">Total Increase</label>
                   <p className="text-lg font-semibold text-[#10B981]">
-                    ${(fullEmployeeData.salaryHistory[fullEmployeeData.salaryHistory.length - 1].amount - 
-                       fullEmployeeData.salaryHistory[0].amount).toLocaleString()}
+                    ${(fullEmployeeData.salary_history[fullEmployeeData.salary_history.length - 1].amount - 
+                       fullEmployeeData.salary_history[0].amount).toLocaleString()}
                   </p>
                 </div>
                 <div>
                   <label className="text-xs text-[#6B7280]">Total Growth</label>
                   <p className="text-lg font-semibold text-[#10B981]">
-                    {(((fullEmployeeData.salaryHistory[fullEmployeeData.salaryHistory.length - 1].amount - 
-                        fullEmployeeData.salaryHistory[0].amount) / 
-                       fullEmployeeData.salaryHistory[0].amount) * 100).toFixed(1)}%
+                    {(((fullEmployeeData.salary_history[fullEmployeeData.salary_history.length - 1].amount - 
+                        fullEmployeeData.salary_history[0].amount) / 
+                       fullEmployeeData.salary_history[0].amount) * 100).toFixed(1)}%
                   </p>
                 </div>
               </div>
@@ -1185,6 +1213,14 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
       {/* Case Notes */}
       <Card className="p-6 border border-[#E5E7EB]">
         <div className="flex items-center justify-between mb-4">
+        <Button
+            size="sm"
+            className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90"
+            onClick={() => setShowNoteInput(!showNoteInput)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Note
+          </Button>
           <h2 className="text-lg font-semibold text-black">Case Notes</h2>
           <div className="flex items-center gap-2">
             <Button
@@ -1391,6 +1427,34 @@ export function EmployeeProfile({ employee, onBack, onEdit }: EmployeeProfilePro
         onSave={handleSaveVisa}
         employeeName={employee.employee.name}
       />
+
+       {/* Delete Confirmation Dialog */}
+       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Employee Record</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{employee.employee.name}</strong>? This action cannot be undone and will permanently remove all associated visa records, notes, and history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                handleDelete();
+                toast.success("Employee deleted successfully!");
+                setShowDeleteDialog(false);
+              }}
+              className="bg-[#D86464] hover:bg-[#C54545]"
+            >
+              Delete Employee
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
+
+
   );
 }
