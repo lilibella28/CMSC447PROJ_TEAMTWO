@@ -102,7 +102,7 @@ export default function App() {
     console.log("Employee data saved:", employeeData);
     // Here you would typically save to a backend/database
     // For now, we'll just navigate back to dashboard
-    setCurrentPage("dashboard");
+    setCurrentPage("employee-profile");
     
     // Show success toast notification
     toast.success("Employee added successfully!", {
@@ -133,6 +133,7 @@ export default function App() {
           <AddEmployee 
             onCancel={handleNavigateToDashboard}
             onSave={handleSaveEmployee}
+          
           />
         );
       case "edit-employee":

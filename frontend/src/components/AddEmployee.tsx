@@ -153,10 +153,10 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
 
       if (response.ok) {
         console.log("✅ Employee created successfully:", result);
-        alert("Employee added successfully!");
+        // alert("Employee added successfully!");
       } else {
         console.error("❌ Error creating employee:", result.error);
-        alert("Error saving employee: " + result.error);
+        // alert("Error saving employee: " + result.error);
       }
     } catch (err) {
       console.error("❌ Network error:", err);
