@@ -69,7 +69,7 @@ export function TopNav({ onLogout, currentPage = "dashboard", onNavigate, curren
             <h1 className="text-xl font-semibold text-black">UMBC</h1>
             <div className="h-0.5 w-8 bg-[#FFCC00]"></div>
           </div>
-          <span className="text-neutral-gray-500 hidden sm:inline">Admin Dashboard</span>
+          <span className="text-neutral-gray-500 hidden sm:inline">Admin Center for Global Engagement</span>
         </div>
 
         {/* Right side - Search, Notifications, Profile */}

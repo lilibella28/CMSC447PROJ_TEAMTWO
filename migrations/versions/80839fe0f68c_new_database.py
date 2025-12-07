@@ -1,8 +1,8 @@
-"""Initiail Nigrations
+"""new database
 
-Revision ID: e08b1b15a40d
+Revision ID: 80839fe0f68c
 Revises: 
-Create Date: 2025-12-06 10:30:36.511547
+Create Date: 2025-12-07 15:23:17.059828
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'e08b1b15a40d'
+revision = '80839fe0f68c'
 down_revision = None
 branch_labels = None
 depends_on = None
