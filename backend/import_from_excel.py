@@ -98,6 +98,15 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
 
     created_emp = updated_emp = created_visas = 0
     
+    # Canonicalize Case type
+    
+    case_lookup = {}
+    
+    def normalize_key(s: str | None):
+        if not isinstance(s, str):
+            return None
+        return s.strip().lower()
+
 
     for i, row in df.iterrows():
 
@@ -106,6 +115,7 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
         # ------------------------------------------
         first = clean(row.get(col("First Name")))
         last = clean(row.get(col("Last name")))
+        full_name = f"{first} {last}".strip()
         raw_email = clean(row.get(col("Employee's UMBC email")))
 
         if not raw_email:
@@ -123,9 +133,21 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
         employee_title = clean(row.get(col("Employee Title")))
         admin = clean(row.get(col("Department Admin")))
         advisor = clean(row.get(col("Department Advisor/PI/chair")))
-        visa_type = clean(row.get(col("Case type")))
         status_raw = clean(row.get(col("Status")))
         filed_by = clean(row.get(col("Filed by")))
+        
+        raw_case = clean(row.get(col("Case type")))
+        key = normalize_key(raw_case)
+        
+        if key:
+            if key in case_lookup:
+                case_type = case_lookup[key]
+            else:
+                case_type = raw_case
+                case_lookup[key] = case_type
+        else:
+            case_type = None
+        
         case_type = clean(row.get(col("Case type")))
         i94_number = clean(row.get(col("I-94 Number")))
         sevis_id = clean(row.get(col("Sevis ID")))
@@ -166,6 +188,7 @@ def import_excel_sheet(xlsx_path: str, sheet_name="Current H-1B cases", commit_e
         field_map = {
             "first_name": first,
             "last_name": last,
+            "full_name": full_name,
             "email": email,
             "personal_email": personal,
             "gender": gender,
