@@ -183,7 +183,7 @@ export function ImportEmployees() {
 
       // Show success toast
       toast.success("Import Complete!", {
-        description: `${summary.newRecords} new employees, ${summary.updatedRecords} updated, ${result.visasAdded || 0} visas added.`,
+        description: `${summary.newRecords} new employees, ${summary.updatedRecords} updated`,
         duration: 5000,
       });
 
@@ -254,29 +254,7 @@ export function ImportEmployees() {
     });
   };
 
-  // Simulate import process with mock data
-  // In production, this would be handled by the Flask backend
-  const simulateImportProcess = (): Promise<ImportSummary> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Mock statistics based on current employee data
-        const totalRecords = 15; // Simulated records in uploaded file
-        const existingEmails = employeesData.map(emp => emp.email);
-        
-        // Simulate: 5 new, 3 updated, 7 identical
-        const summary: ImportSummary = {
-          newRecords: 5,
-          updatedRecords: 3,
-          skippedRecords: 7,
-          errors: [],
-          warnings: ["2 records have missing or invalid dates."], // Add warnings for missing/invalid dates
-          timestamp: new Date(),
-        };
-
-        resolve(summary);
-      }, 1000);
-    });
-  };
+ 
 
   // Reset to initial state
   const handleReset = () => {
@@ -521,7 +499,7 @@ export function ImportEmployees() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() => window.location.href = "/dashboard"}
+                  onClick={() => window.location.href = "http://localhost:3000"}
                   className="bg-[#5B8DEF] hover:bg-[#4A7DD8] text-white flex-1 sm:flex-none"
                 >
                   View All Cases
@@ -562,18 +540,7 @@ export function ImportEmployees() {
               </li>
             </ul>
 
-            <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
-              <p className="text-xs text-[#6B7280] mb-2">
-                <strong>Developer Note:</strong> This feature connects to a Flask API endpoint at{" "}
-                <code className="bg-[#E5E5E5] px-1 py-0.5 rounded">http://localhost:5000/api/excel/import-excel</code>
-              </p>
-              <p className="text-xs text-[#6B7280]">
-                <strong>To activate backend:</strong> Uncomment "OPTION 1: REAL BACKEND API" in the{" "}
-                <code className="bg-[#E5E5E5] px-1 py-0.5 rounded">processImport</code> function (line ~115).
-                Comment out "OPTION 2: MOCK DATA". Ensure Flask server is running with{" "}
-                <code className="bg-[#E5E5E5] px-1 py-0.5 rounded">python backend/run.py</code>
-              </p>
-            </div>
+            
           </div>
         </Card>
         </div>

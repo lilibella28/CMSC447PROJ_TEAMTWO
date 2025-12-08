@@ -701,12 +701,12 @@ export function EmployeeProfile({ employee, onBack, onEdit, onDelete }: Employee
                     <label className="text-sm text-[#6B7280]">Filed By</label>
                     <p className="text-black mt-1">{fullEmployeeData?.filed_by || employee.filed_by}</p>
                   </div>
-                  {fullEmployeeData?.case_type && (
-                    <div>
-                      <label className="text-sm text-[#6B7280]">Case Type</label>
-                      <p className="text-black mt-1">{fullEmployeeData.case_type}</p>
-                    </div>
-                  )}
+                  {/* {fullEmployeeData?.case_type && (
+                    // <div>
+                    //   <label className="text-sm text-[#6B7280]">Case Type</label>
+                    //   <p className="text-black mt-1">{fullEmployeeData.case_type}</p>
+                    // </div>
+                  )} */}
                   <div>
                     <label className="text-sm text-[#6B7280]">Start Date</label>
                     <Tooltip>

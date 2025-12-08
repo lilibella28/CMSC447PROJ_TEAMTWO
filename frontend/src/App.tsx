@@ -98,18 +98,45 @@ export default function App() {
   };
   
 
-  const handleSaveEmployee = (employeeData: any) => {
-    console.log("Employee data saved:", employeeData);
-    // Here you would typically save to a backend/database
-    // For now, we'll just navigate back to dashboard
-    setCurrentPage("employee-profile");
+  // const handleSaveEmployee = (employeeData: any) => {
+  //   console.log("Employee data saved:", employeeData);
+  //   // Here you would typically save to a backend/database
+  //   // For now, we'll just navigate back to dashboard
+  //   setCurrentPage("employee-profile");
     
-    // Show success toast notification
+  //   // Show success toast notification
+  //   toast.success("Employee added successfully!", {
+  //     description: `${employeeData.first_name} ${employeeData.last_name} has been added to the system.`,
+  //     duration: 4000,
+  //   });
+  // };
+
+  const handleSaveEmployee = (newEmployee: any) => {
+    console.log("🎉 New employee created:", newEmployee);
+  
+    // Store full employee object
+    setSelectedEmployee({
+      employee: {
+        id: newEmployee.id,
+        name: `${newEmployee.first_name} ${newEmployee.last_name}`,
+        department: newEmployee.department,
+        email: newEmployee.email
+      },
+      status: newEmployee.status || "Active",
+      visaType: newEmployee.visa_type || "N/A",
+      expirationDate: newEmployee.expiration_date || null,
+      daysLeft: null
+    });
+  
+    // Navigate to profile
+    setCurrentPage("employee-profile");
+  
     toast.success("Employee added successfully!", {
-      description: `${employeeData.first_name} ${employeeData.last_name} has been added to the system.`,
+      description: `${newEmployee.first_name} ${newEmployee.last_name} has been added to the system.`,
       duration: 4000,
     });
   };
+  
 
   const handleUpdateEmployee = () => {
     // Navigate back to profile after successful update

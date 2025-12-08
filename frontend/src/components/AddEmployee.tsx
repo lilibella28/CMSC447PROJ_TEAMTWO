@@ -657,7 +657,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                   </div>
 
 
-                  {/* Case Type */}
+                  {/* Case Type
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="case_type" className="text-black">
@@ -673,7 +673,7 @@ export function AddEmployee({ onCancel, onSave }: AddEmployeeProps) {
                       onChange={(e) => handleInputChange("case_type", e.target.value)}
                       className="h-11 rounded-lg border-2 border-[#E5E7EB] bg-[#F6F6F6] focus:border-[#FFCC00] focus:ring-2 focus:ring-[#FFCC00] focus:ring-opacity-20"
                     />
-                  </div>
+                  </div> */}
 
                   {/* Start Date */}
                   <DatePicker

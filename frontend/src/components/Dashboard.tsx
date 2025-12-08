@@ -144,7 +144,7 @@ export function Dashboard({
     const matchesSearch =
       searchQuery === "" ||
       visaCase.employee.name.toLowerCase().includes(searchLower) ||
-      visaCase.employee.email.toLowerCase().includes(searchLower);
+      visaCase.employee.email?.toLowerCase().includes(searchLower);
 
     // Department filter
     const matchesDepartment =
@@ -764,49 +764,7 @@ export function Dashboard({
           )}
         </div>
 
-        {/* Visual Summary Section */}
-        <div className="mb-8">
-          <h2 className="text-[#1E1E1E] mb-4">Case Overview</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Visa Type Distribution */}
-            <Card className="border-[#E5E5E5] p-6">
-              <h3 className="text-[#1E1E1E] mb-4">Visa Type Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={visaTypeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {visaTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-
-            {/* Status Distribution */}
-            <Card className="border-[#E5E5E5] p-6">
-              <h3 className="text-[#1E1E1E] mb-4">Case Status Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={statusData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#5B8DEF" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </div>
-        </div>
+       
 
 
         {/* Footer */}

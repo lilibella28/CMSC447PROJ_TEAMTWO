@@ -207,11 +207,15 @@ export function Employees({ onViewEmployee, onNavigateToAddEmployee, onNavigateT
       return priorityA - priorityB;
     }
     
-    // Within same priority group, sort alphabetically by last name
-    const lastNameA = a.employee.name.split(" ").pop() || "";
-    const lastNameB = b.employee.name.split(" ").pop() || "";
-    return lastNameA.localeCompare(lastNameB);
+    const daysA = a.daysLeft ?? Infinity;
+    const daysB = b.daysLeft ?? Infinity;
+  
+    return daysA - daysB;
+
+
   });
+
+  
 
   // Pagination
   const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);

@@ -4,7 +4,7 @@
  */
 
 import * as XLSX from 'xlsx';
-import { Employee } from './employeeData';
+import { Employee } from '../utils/dataService';
 
 /**
  * Export employees data to Excel format
@@ -16,8 +16,8 @@ export async function exportEmployeesToExcel(employees: Employee[], filename: st
     const excelData = employees.map((emp) => ({
       // Personal Information
       'Employee ID': emp.id,
-      'First Name': emp.firstName || '',
-      'Last Name': emp.lastName || '',
+      'First Name': emp.first_name || '',
+      'Last Name': emp.last_name || '',
       'Employee Name': emp.employeeName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim(),
       'UMBC Email': emp.umbcEmail || emp.email || '',
       'Personal Email': emp.personalEmail || '',

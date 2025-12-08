@@ -3,6 +3,8 @@ import sys
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
+import random
+from datetime import date, timedelta
 
 # Ensure project root in path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +44,14 @@ def to_date(val):
         return None
 
 
+
+def random_expiration_date():
+    """Generate a random date between 2020-01-01 and 2030-12-31."""
+    start = date(2020, 1, 1)
+    end = date(2030, 12, 31)
+    delta = end - start
+    random_days = random.randrange(delta.days)
+    return start + timedelta(days=random_days)
 
 def to_decimal(val):
     """Convert salary or numeric strings."""

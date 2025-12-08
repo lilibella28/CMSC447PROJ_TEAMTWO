@@ -1,8 +1,8 @@
-"""new database
+"""Initial database setting
 
-Revision ID: 80839fe0f68c
+Revision ID: 77e9a3a84f1c
 Revises: 
-Create Date: 2025-12-07 15:23:17.059828
+Create Date: 2025-12-07 19:07:01.033379
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '80839fe0f68c'
+revision = '77e9a3a84f1c'
 down_revision = None
 branch_labels = None
 depends_on = None
